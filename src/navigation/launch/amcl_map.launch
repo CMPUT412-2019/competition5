@@ -1,0 +1,9 @@
+<launch>
+    <arg name="rviz" default="true" />
+
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch" />
+    <include file="$(find turtlebot_navigation)/launch/gmapping_demo.launch" />
+    <include file='$(find turtlebot_teleop)/launch/logitech.launch' />
+
+    <node pkg='rviz' name='rviz' type='rviz' args="-d $(find navigation)/rviz/amcl.rviz" if="$(arg rviz)" />
+</launch>
