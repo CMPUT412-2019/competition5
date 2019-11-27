@@ -12,10 +12,12 @@
   <xacro:include filename="$(find turtlebot_description)/urdf/sensors/asus_xtion_pro.urdf.xacro"/>
   <xacro:include filename="$(find models)/urdf/bottom_camera.urdf.xacro"/>
 <!--  <xacro:include filename="$(find models)/urdf/top_camera.urdf.xacro"/>-->
+  <xacro:include filename="$(find models)/urdf/box_pusher.urdf.xacro"/>
 
   <kobuki/>
   <stack_hexagons                 parent="base_link"/>
   <sensor_asus_xtion_pro          parent="base_link"/>
   <bottom_camera                  parent="base_link"/>
 <!--  <top_camera                     parent="base_link"/>-->
+  <box_pusher                     parent="base_link"/>
 </robot>

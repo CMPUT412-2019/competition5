@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<robot name="bottom_camera" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Xacro properties -->
+  <xacro:property name="cam_rz" value="0.0"/>
+  <xacro:property name="box_x" value="0.15"/>
+  <xacro:property name="box_y" value="0.15"/>
+  <xacro:property name="box_z" value="0.15"/>
+  <xacro:property name="box_size" value="0.1"/>
+
+  <xacro:macro name="box_pusher" params="parent">
+
+    <joint name="left_box_joint" type="fixed">
+      <axes xyz="0 1 0"/>
+      <origin xyz="${box_x} ${box_y} ${box_z}" rpy="0 0 0"/>
+      <parent link="${parent}"/>
+      <child link="left_box_link"/>
+    </joint>
+    <joint name="right_box_joint" type="fixed">
+      <axes xyz="0 1 0"/>
+      <origin xyz="${box_x} ${-box_y} ${box_z}" rpy="0 0 0"/>
+      <parent link="${parent}"/>
+      <child link="right_box_link"/>
+    </joint>
+
+
+    <link name="left_box_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${box_size} ${box_size} ${box_size}"/>
+        </geometry>
+        <material name="red"/>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${box_size} ${box_size} ${box_size}"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="right_box_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${box_size} ${box_size} ${box_size}"/>
+        </geometry>
+        <material name="red"/>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${box_size} ${box_size} ${box_size}"/>
+        </geometry>
+      </collision>
+    </link>
+
+  </xacro:macro>
+</robot>
