@@ -1,0 +1,16 @@
+<launch>
+  <arg name="simulation" default="false"/>
+
+  <include file="$(find navigation)/launch/load_poses.launch"/>
+  <include file="$(find navigation)/launch/localize.launch">
+    <arg name="simulation" value="$(arg simulation)"/>
+  </include>
+  <include file="$(find util)/launch/ar_track.launch">
+    <arg name="simulation" value="$(arg simulation)"/>
+  </include>
+
+<!--  <node name="competition4" type="competition4.py" pkg="competition4">-->
+<!--    <remap from="camera_depth_image" to="/camera/depth/image_raw"/>-->
+<!--    <remap from="ar_pose_marker" >-->
+<!--  </node>-->
+</launch>

@@ -1,0 +1,24 @@
+# Position is xyz, orientation is xyzw
+
+named_poses:
+  map_origin:
+    position:
+      - 0
+      - 0
+      - 0
+    orientation:
+      - 0
+      - 0
+      - 0
+      - 1
+
+  ar_parking_start:
+    position:
+      - 3.46246290207
+      - 2.85593605042
+      - 0
+    orientation:
+      - 0
+      - 0
+      - 0
+      - 1

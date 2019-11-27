@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="AR Cube">
+    <static>false</static>
+    <link name="ar_cube_link">
+      <collision name="ar_cube_collision">
+        <geometry>
+          <box>
+            <size>0.25 0.25 0.25</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="ar_cube_visual">
+        <geometry>
+          <box>
+            <size>0.25 0.25 0.25</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>CubeTexture</name>
+            <uri>model://ar_cube/materials/scripts/cube.material</uri>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

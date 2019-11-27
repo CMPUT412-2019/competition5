@@ -1,0 +1,13 @@
+<launch>
+  <arg name="simulation" default="false"/>
+  <include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
+    <arg name="marker_size" value="20.4"/>
+    <arg name="cam_image_topic" value="/camera/rgb/image_raw"/>
+    <arg name="cam_info_topic" value="/camera/rgb/camera_info"/>
+<!--    <arg name="cam_image_topic" value="/camera/depth_registered/points" unless="$(arg simulation)" />-->
+<!--    <arg name="cam_image_topic" value="/camera/depth/points" if="$(arg simulation)" />-->
+<!--    <arg name="cam_info_topic" value="/camera/depth_registered/camera_info" unless="$(arg simulation)" />-->
+<!--    <arg name="cam_info_topic" value="/camera/depth/camera_info" if="$(arg simulation)" />-->
+    <arg name="output_frame" value="map" />
+  </include>
+</launch>
