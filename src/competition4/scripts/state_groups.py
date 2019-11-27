@@ -1,9 +1,13 @@
 import numpy as np
+import rospy
+from geometry_msgs.msg import PoseStamped, Point, Quaternion
+from ros_numpy import msgify
 from smach import Sequence, StateMachine
 
 from src.linefollow.scripts.filter import RedDetector, RedLowerDetector, white_filter, red_filter
 from src.linefollow.scripts.pid_control import PIDController
 from src.linefollow.scripts.state.find_marker import FindMarkerState
+from src.linefollow.scripts.state.forward import ForwardState
 from src.linefollow.scripts.state.linefollow import LineFollowState, TransitionAfter, TransitionAt
 from src.linefollow.scripts.state.location1 import Location1State
 from src.linefollow.scripts.state.location2 import Location2State
@@ -11,9 +15,10 @@ from src.linefollow.scripts.state.location3 import Location3State
 from src.linefollow.scripts.state.rotate import RotateState
 from src.linefollow.scripts.state.stop import StopState
 from src.navigation.scripts.navigate_to_marker import NavigateToMarkerState
+from src.navigation.scripts.navigate_to_moving_goal import NavigateToMovingGoalState
 from src.navigation.scripts.navigate_to_named_pose import NavigateToNamedPoseState
 from src.navigation.scripts.navigate_to_number import NavigateToNumberState
-from src.util.scripts.ar_tag import ARTag
+from src.util.scripts.ar_tag import ARTag, qv_mult
 from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
 from src.util.scripts.state.absorb_result import AbsorbResultState
 from src.util.scripts.state.function import FunctionState
@@ -154,20 +159,37 @@ def location3(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMach
 def find_shape(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMachine
     sq = Sequence(outcomes=['ok', 'err', 'match'], connector_outcome='ok', input_keys=['green_shape'])
     with sq:
-        Sequence.add('GOAL_1', NavigateToNamedPoseState('S1'))
-        Sequence.add('FIND_1', Location3State(cam_pixel_to_point), transitions={'err': 'GOAL_2'})
-        Sequence.add('GOAL_2', NavigateToNamedPoseState('S2'))
-        Sequence.add('FIND_2', Location3State(cam_pixel_to_point), transitions={'err': 'GOAL_3'})
-        Sequence.add('GOAL_3', NavigateToNamedPoseState('S3'))
-        Sequence.add('FIND_3', Location3State(cam_pixel_to_point), transitions={'err': 'GOAL_4'})
-        Sequence.add('GOAL_4', NavigateToNamedPoseState('S4'))
-        Sequence.add('FIND_4', Location3State(cam_pixel_to_point), transitions={'err': 'GOAL_5'})
-        Sequence.add('GOAL_5', NavigateToNamedPoseState('S5'))
-        Sequence.add('FIND_5', Location3State(cam_pixel_to_point), transitions={'err': 'GOAL_6'})
-        Sequence.add('GOAL_6', NavigateToNamedPoseState('S6'))
-        Sequence.add('FIND_6', Location3State(cam_pixel_to_point), transitions={'err': 'GOAL_7'})
-        Sequence.add('GOAL_7', NavigateToNamedPoseState('S7'))
-        Sequence.add('FIND_7', Location3State(cam_pixel_to_point), transitions={'err': 'GOAL_8'})
-        Sequence.add('GOAL_8', NavigateToNamedPoseState('S8'))
-        Sequence.add('FIND_8', Location3State(cam_pixel_to_point))
+        Sequence.add('SQUARE1', look_in_square('S1', cam_pixel_to_point))
+        Sequence.add('SQUARE2', look_in_square('S2', cam_pixel_to_point))
+        Sequence.add('SQUARE3', look_in_square('S3', cam_pixel_to_point))
+        Sequence.add('SQUARE4', look_in_square('S4', cam_pixel_to_point))
+        Sequence.add('SQUARE5', look_in_square('S5', cam_pixel_to_point))
+        Sequence.add('SQUARE6', look_in_square('S6', cam_pixel_to_point))
+        Sequence.add('SQUARE7', look_in_square('S7', cam_pixel_to_point))
+        Sequence.add('SQUARE8', look_in_square('S8', cam_pixel_to_point))
+    return sq
+
+
+def look_in_square(name, cam_pixel_to_point):  # type: (str, CamPixelToPointServer) -> StateMachine
+    sq = Sequence(outcomes=['ok'], connector_outcome='ok')
+    offset = 0.5
+    v = 0.2
+
+    dt = offset / v
+
+    def goal():
+        pose = PoseStamped()
+        pose.header.frame_id = 'map'
+        position = np.array([float(x) for x in rospy.get_param('named_poses/{}/position'.format(name))])
+        orientation = np.array([float(x) for x in rospy.get_param('named_poses/{}/orientation'.format(name))])
+        position += qv_mult(orientation, np.array([offset, 0.0, 0.0]))
+        pose.pose.position = msgify(Point, position)
+        pose.pose.orientation = msgify(Quaternion, orientation)
+
+    with sq:
+        Sequence.add('MOVE_IN_FRONT', NavigateToMovingGoalState(goal))
+        Sequence.add('MOVE_FORWARD', ForwardState(v, dt))
+        Sequence.add('STOP', StopState())
+        Sequence.add('FIND', Location3State(cam_pixel_to_point))
+        Sequence.add('MOVE_BACK', ForwardState(-v, dt))
     return sq
