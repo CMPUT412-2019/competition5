@@ -94,6 +94,14 @@ class ARCube(object):
     def _set_pose(self, pose):  # type: (PoseStamped) -> None
         self.pose = pose
 
+    def get_pose_with_offset(self, offset):  # type: (Tuple[float, float, float]) -> PoseStamped
+        return pose_with_offset(self.pose, offset)
+
+    @property
+    def surface_normal(self):
+        return unit_vector(rnp.numpify(self.get_pose_with_offset((0., 0., 1.)).pose.position) -
+                           rnp.numpify(self.pose.pose.position))
+
     def _offset(self): # type: ()-> Tuple[float, float, float]
         return (0, 0, -self.cube_side_length/2)
 
