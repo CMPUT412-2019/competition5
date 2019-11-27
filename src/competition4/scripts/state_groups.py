@@ -23,7 +23,7 @@ from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
 from src.util.scripts.state.absorb_result import AbsorbResultState
 from src.util.scripts.state.function import FunctionState
 from src.util.scripts.util import ProximityDetector, notify_artag, notify_unmarked
-from src.util.select_number import SelectNumberState
+from src.util.scripts.select_number import SelectNumberState
 
 forward_speed = 0.8
 kp = 5.
