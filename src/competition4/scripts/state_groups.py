@@ -1,9 +1,11 @@
 import numpy as np
-import rospy
 from geometry_msgs.msg import PoseStamped, Point, Quaternion
 from ros_numpy import msgify
 from smach import Sequence, StateMachine
 
+from src.competition4.scripts.parking_square import ParkingSquare
+from src.competition4.scripts.state.search_for_shape_in_square import SearchForShapeInSquareState
+from src.competition4.scripts.state.short_circuit_parking_square import ShortCircuitParkingSquareState
 from src.linefollow.scripts.filter import RedDetector, RedLowerDetector, white_filter, red_filter
 from src.linefollow.scripts.pid_control import PIDController
 from src.linefollow.scripts.state.find_marker import FindMarkerState
@@ -156,21 +158,21 @@ def location3(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMach
     return sm
 
 
-def find_shape(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMachine
+def find_shape(squares, cam_pixel_to_point):  # type: (List[ParkingSquare], CamPixelToPointServer) -> StateMachine
     sq = Sequence(outcomes=['ok', 'err', 'match'], connector_outcome='ok', input_keys=['green_shape'])
     with sq:
-        Sequence.add('SQUARE1', look_in_square('S1', cam_pixel_to_point))
-        Sequence.add('SQUARE2', look_in_square('S2', cam_pixel_to_point))
-        Sequence.add('SQUARE3', look_in_square('S3', cam_pixel_to_point))
-        Sequence.add('SQUARE4', look_in_square('S4', cam_pixel_to_point))
-        Sequence.add('SQUARE5', look_in_square('S5', cam_pixel_to_point))
-        Sequence.add('SQUARE6', look_in_square('S6', cam_pixel_to_point))
-        Sequence.add('SQUARE7', look_in_square('S7', cam_pixel_to_point))
-        Sequence.add('SQUARE8', look_in_square('S8', cam_pixel_to_point))
+        Sequence.add('SQUARE1', look_in_square(squares[0], cam_pixel_to_point))
+        Sequence.add('SQUARE2', look_in_square(squares[1], cam_pixel_to_point))
+        Sequence.add('SQUARE3', look_in_square(squares[2], cam_pixel_to_point))
+        Sequence.add('SQUARE4', look_in_square(squares[3], cam_pixel_to_point))
+        Sequence.add('SQUARE5', look_in_square(squares[4], cam_pixel_to_point))
+        Sequence.add('SQUARE6', look_in_square(squares[5], cam_pixel_to_point))
+        Sequence.add('SQUARE7', look_in_square(squares[6], cam_pixel_to_point))
+        Sequence.add('SQUARE8', look_in_square(squares[7], cam_pixel_to_point))
     return sq
 
 
-def look_in_square(name, cam_pixel_to_point):  # type: (str, CamPixelToPointServer) -> StateMachine
+def look_in_square(square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixelToPointServer) -> StateMachine
     sq = Sequence(outcomes=['ok'], connector_outcome='ok')
     offset = 0.5
     v = 0.2
@@ -180,16 +182,18 @@ def look_in_square(name, cam_pixel_to_point):  # type: (str, CamPixelToPointServ
     def goal():
         pose = PoseStamped()
         pose.header.frame_id = 'map'
-        position = np.array([float(x) for x in rospy.get_param('named_poses/{}/position'.format(name))])
-        orientation = np.array([float(x) for x in rospy.get_param('named_poses/{}/orientation'.format(name))])
+        position = square.pose.pose.position
+        orientation = square.pose.pose.orientation
         position += qv_mult(orientation, np.array([offset, 0.0, 0.0]))
         pose.pose.position = msgify(Point, position)
         pose.pose.orientation = msgify(Quaternion, orientation)
 
     with sq:
+        Sequence.add('SHORTCIRCUIT', ShortCircuitParkingSquareState(square), transitions={'shortcircuit': 'ABSORB'})
         Sequence.add('MOVE_IN_FRONT', NavigateToMovingGoalState(goal))
         Sequence.add('MOVE_FORWARD', ForwardState(v, dt))
         Sequence.add('STOP', StopState())
-        Sequence.add('FIND', Location3State(cam_pixel_to_point))
+        Sequence.add('FIND', SearchForShapeInSquareState(square, cam_pixel_to_point))
         Sequence.add('MOVE_BACK', ForwardState(-v, dt))
+        Sequence.add('ABSORB', AbsorbResultState())
     return sq
