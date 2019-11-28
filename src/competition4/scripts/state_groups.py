@@ -1,6 +1,6 @@
 import numpy as np
 from geometry_msgs.msg import PoseStamped, Point, Quaternion
-from ros_numpy import msgify
+from ros_numpy import msgify, numpify
 from smach import Sequence, StateMachine
 
 from src.competition4.scripts.parking_square import ParkingSquare
@@ -182,8 +182,8 @@ def look_in_square(square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixe
     def goal():
         pose = PoseStamped()
         pose.header.frame_id = 'map'
-        position = square.pose.pose.position
-        orientation = square.pose.pose.orientation
+        position = numpify(square.pose.pose.position)
+        orientation = numpify(square.pose.pose.orientation)
         position += qv_mult(orientation, np.array([offset, 0.0, 0.0]))
         pose.pose.position = msgify(Point, position)
         pose.pose.orientation = msgify(Quaternion, orientation)
