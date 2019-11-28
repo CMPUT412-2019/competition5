@@ -190,10 +190,10 @@ def look_in_square(square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixe
     return sq
 
 
-def push_cube(squares):  # type: (List[ParkingSquare]) -> StateMachine
+def push_cube(squares, cube):  # type: (List[ParkingSquare]) -> StateMachine
     sq = Sequence(outcomes=['ok'], connector_outcome='ok')
     with sq:
         Sequence.add('MOVE_BEHIND_CUBE', navigate_behind_cube(squares), transitions={'err': 'ABSORB'})
-        Sequence.add('PUSH', PushToMarkerSquareState(squares, 0.2))
+        Sequence.add('PUSH', PushToMarkerSquareState(squares, cube, 0.2))
         Sequence.add('ABSORB', AbsorbResultState())
     return sq

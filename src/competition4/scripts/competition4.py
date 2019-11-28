@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 
 import rospy
-from geometry_msgs.msg import PoseStamped, Point
 from smach import Sequence
 from smach_ros import IntrospectionServer
 
-from src.boxpush.scripts.state.boxpush import NavigateBehindCubeState, LineUpBehindCubeState, PushToGoalState, \
-    parking_square_target
-from src.competition4.scripts.parking_square import ParkingSquare
 from src.competition4.scripts.state.search_for_markers import search_for_tags
 from src.competition4.scripts.state_groups import move_to_stop_line, location1, enter_split, move_to_obstacle, \
     location2, \
-    exit_split, off_ramp, ar_tag, joystick_location, on_ramp, location3, find_shape
+    exit_split, off_ramp, ar_tag, on_ramp, location3, find_shape, push_cube
 from src.util.scripts.ar_tag import ARTag, ARCube
 from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
-from src.util.scripts.state.wait_for_joy import WaitForJoyState
+from src.util.scripts.parking_square import ParkingSquare
+from src.util.scripts.util import notify_finished
 
 
 class UserData:
@@ -32,11 +29,11 @@ def main():
     cam_pixel_to_point = CamPixelToPointServer()
     squares = []
     for i in range(1, 9):
-        squares.append(ParkingSquare('S{}'.format(i)))
+        squares.append(ParkingSquare(i))
 
     sq = Sequence(outcomes=['ok', 'err'], connector_outcome='ok')
     with sq:
-        Sequence.add('START', WaitForJoyState())
+        # Sequence.add('START', WaitForJoyState())
 
         Sequence.add('STOP1', move_to_stop_line())
         Sequence.add('LOCATION1', location1(cam_pixel_to_point))
@@ -58,8 +55,7 @@ def main():
 
         Sequence.add('GO_TO_MARKER', ar_tag(marker))
 
-        Sequence.add('MOVE_BEHIND_CUBE', NavigateBehindCubeState(parking_square_target(marker, wall_offset), cube, 0.7))
-        Sequence.add('PUSH', PushToGoalState(cube, parking_square_target(marker, wall_offset), 0.2))
+        Sequence.add('PUSH_CUBE', push_cube(squares, cube))
 
         Sequence.add('FIND_SHAPE', find_shape(squares, cam_pixel_to_point))
 
@@ -75,6 +71,7 @@ def main():
     sis.start()
     print('Executing...')
     sq.execute()
+    notify_finished()
 
 
 if __name__ == '__main__':

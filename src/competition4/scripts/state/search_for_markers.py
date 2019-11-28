@@ -7,6 +7,11 @@ from src.util.scripts.parking_square import ParkingSquare, closest_square
 from src.navigation.scripts.navigate_to_named_pose import NavigateToNamedPoseState
 from src.util.scripts.ar_tag import ARTag, ARCube
 from src.util.scripts.state.absorb_result import AbsorbResultState
+from src.util.scripts.util import notify_cube
+
+
+def notify_marker():
+    pass
 
 
 class FindTags(State):
@@ -24,9 +29,15 @@ class FindTags(State):
         start_time = rospy.get_time()
         while not rospy.is_shutdown() and rospy.get_time()-start_time < duration:
             if self.marker.pose is not None:
-                closest_square(self.marker.pose.pose.position, self.squares).set_contains_marker()
+                square = closest_square(self.marker.pose.pose.position, self.squares)
+                if not square.contains_marker():
+                    notify_marker()
+                square.set_contains_marker()
             if self.cube.pose is not None:
-                closest_square(self.cube.pose.pose.position, self.squares).set_contains_cube()
+                square = closest_square(self.cube.pose.pose.position, self.squares)
+                if not square.contains_cube():
+                    notify_cube()
+                square.set_contains_cube()
 
             if self.marker.pose is not None and self.cube.pose is not None:
                 return 'found'

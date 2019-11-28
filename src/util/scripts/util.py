@@ -96,10 +96,24 @@ def notify_match():
 
 
 def notify_artag():
-    led('g1g2')
+    led('g1b2')
     playsound.playsound(path.join(path.dirname(__file__), '../sound/artag.mp3'), block=True)
     led('b1b2')
 
+def notify_cube():
+    led('r1b2')
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/artag.mp3'), block=True)
+    led('b1b2')
+
+def notify_pushed():
+    led('g1r2')
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/pushed.mp3'), block=True)
+    led('b1b2')
+
+def notify_finished():
+    led('g1g2')
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/finished.mp3'), block=True)
+    led('b1b2')
 
 def notify_unmarked():
     led('r1r2')
