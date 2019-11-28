@@ -15,6 +15,7 @@ from src.competition4.scripts.state_groups import move_to_stop_line, location1, 
 from src.util.scripts.ar_tag import ARTag, ARCube
 from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
 from src.util.scripts.state.wait_for_joy import WaitForJoyState
+from src.util.scripts.util import notify_finished
 
 
 class UserData:
@@ -75,6 +76,7 @@ def main():
     sis.start()
     print('Executing...')
     sq.execute()
+    notify_finished()
 
 
 if __name__ == '__main__':

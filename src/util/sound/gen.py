@@ -10,6 +10,8 @@ if __name__ == '__main__':
         'match.mp3': 'I found the matching shape',
         'artag.mp3': 'Found marker',
         'unmarked.mp3': 'Found unmarked spot',
+        'pushed.mp3': 'Finished pushing the box',
+        'finished.mp3': 'Finished the source',
     }
 
     for n in range(-20, 20):

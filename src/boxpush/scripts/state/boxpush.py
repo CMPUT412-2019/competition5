@@ -12,7 +12,7 @@ from src.util.scripts.ar_tag import qv_mult, ARCube
 from src.util.scripts.parking_square import ParkingSquare
 from src.util.scripts.state.function import ReturnFunctionState
 from src.util.scripts.state.park_into_pose import park_into_pose
-from src.util.scripts.util import SubscriberValue, angle_diff
+from src.util.scripts.util import SubscriberValue, angle_diff, notify_pushed
 
 
 class PushToMarkerSquareState(State):
@@ -53,6 +53,7 @@ class PushToMarkerSquareState(State):
             target_position = numpify(target_pose.pose.position)[0:2]
             if (np.dot(target_position - this_position, target_position - cube_position)) <= 0:
                 self.twist_pub.publish(Twist())
+                notify_pushed()
                 return 'ok'
 
             target_angle = np.arctan2(target_pose.pose.position.y - this_pose.pose.position.y, target_pose.pose.position.x - this_pose.pose.position.x)
