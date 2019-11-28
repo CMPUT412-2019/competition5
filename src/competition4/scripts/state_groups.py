@@ -17,9 +17,8 @@ from src.linefollow.scripts.state.location3 import Location3State
 from src.linefollow.scripts.state.rotate import RotateState
 from src.linefollow.scripts.state.stop import StopState
 from src.navigation.scripts.navigate_to_marker import NavigateToMarkerState
-from src.navigation.scripts.navigate_to_moving_goal import NavigateToMovingGoalState
+from src.navigation.scripts.navigate_to_goal import NavigateToGoalState
 from src.navigation.scripts.navigate_to_named_pose import NavigateToNamedPoseState
-from src.navigation.scripts.navigate_to_number import NavigateToNumberState
 from src.util.scripts.ar_tag import ARTag, qv_mult
 from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
 from src.util.scripts.state.absorb_result import AbsorbResultState
@@ -190,7 +189,7 @@ def look_in_square(square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixe
 
     with sq:
         Sequence.add('SHORTCIRCUIT', ShortCircuitParkingSquareState(square), transitions={'shortcircuit': 'ABSORB'})
-        Sequence.add('MOVE_IN_FRONT', NavigateToMovingGoalState(goal))
+        Sequence.add('MOVE_IN_FRONT', NavigateToGoalState(goal))
         Sequence.add('MOVE_FORWARD', ForwardState(v, dt))
         Sequence.add('STOP', StopState())
         Sequence.add('FIND', SearchForShapeInSquareState(square, cam_pixel_to_point))
