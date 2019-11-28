@@ -7,8 +7,8 @@ from ros_numpy import msgify, numpify
 class ParkingSquare:
     def __init__(self, number):  # int: (str) -> None
         pose_name = 'S{}'.format(number)
-        position = [float(x) for x in rospy.get_param('named_poses/{}/position'.format(pose_name))]
-        orientation = [float(x) for x in rospy.get_param('named_poses/{}/orientation'.format(pose_name))]
+        position = np.array([float(x) for x in rospy.get_param('named_poses/{}/position'.format(pose_name))])
+        orientation = np.array([float(x) for x in rospy.get_param('named_poses/{}/orientation'.format(pose_name))])
         self._pose = PoseStamped()
         self._pose.header.frame_id = 'map'
         self._pose.pose.position = msgify(Point, position)

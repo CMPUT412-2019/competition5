@@ -1,24 +1,15 @@
 <launch>
     <arg name="simulation" default="false"/>
-    <arg name="rviz" default="true" />
     <include file='$(find models)/launch/turtlebot.launch' unless="$(arg simulation)" />
     <include file="$(find models)/launch/turtlebot_world.launch" if="$(arg simulation)"/>
 
     <include file='$(find navigation)/launch/rtabmap_demo_turtlebot_mapping.launch'>
-        <arg name='localization' value='true' />
-        <arg name="simulation" value="$(arg simulation)"/>
         <arg name='database_path' value='$(find navigation)/rtabmap/realworld/rtabmap.db' unless="$(arg simulation)" />
         <arg name='database_path' value='$(find navigation)/rtabmap/simulation/rtabmap.db' if="$(arg simulation)" />
+        <arg name="simulation" value="$(arg simulation)"/>
     </include>
 
-    <node pkg='rviz' name='rviz' type='rviz' args="-d $(find navigation)/rviz/config.rviz" if="$(arg rviz)" />
+    <node pkg='rviz' name='rviz' type='rviz' args="-d $(find navigation)/rviz/config.rviz" />
 
     <include file='$(find turtlebot_teleop)/launch/logitech.launch' />
-
-    <!-- Convert odometry to Pose2D -->
-    <node pkg="kobuki_node" type="getOdom2D.py" name="getOdom2D">
-        <remap from="mobile_base/odom" to="mobile_base/odom" unless="$(arg simulation)" />
-        <remap from="mobile_base/odom" to="odom" if="$(arg simulation)"/>
-        <remap from="pose2d" to="/pose2d" />
-    </node>
 </launch>

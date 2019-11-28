@@ -1,0 +1,4 @@
+<launch>
+    <node name="predict_server" pkg="feature_detector" type="run-docker.bash" args="$(find feature_detector)"
+          output="screen"/>
+</launch>

@@ -25,7 +25,7 @@ from src.util.scripts.util import ProximityDetector, notify_artag, notify_unmark
 from src.util.scripts.select_number import SelectNumberState
 
 forward_speed = 0.8
-kp = 5.
+kp = 4.
 ki = 0.
 kd = 0.
 proximity_detector = ProximityDetector(1.)
@@ -111,22 +111,22 @@ def on_ramp():  # type: () -> StateMachine
 def ar_tag(marker):  # type: (ARTag) -> StateMachine
         sq = Sequence(outcomes=['ok'], connector_outcome='ok')
         with sq:
-            Sequence.add('AR_START', NavigateToNamedPoseState('ar_start'), transitions={'err': 'ABSORB'})
-            Sequence.add('AR_FIND', FindMarkerState(marker, 'cmd_vel_mux/input/teleop'))
+            # Sequence.add('AR_START', NavigateToNamedPoseState('ar_start'), transitions={'err': 'ABSORB'})
+            # Sequence.add('AR_FIND', FindMarkerState(marker, 'cmd_vel_mux/input/teleop'))
             Sequence.add('AR_GOTO', NavigateToMarkerState(marker), transitions={'err': 'ABSORB'})
             Sequence.add('NOTIFY', FunctionState(notify_artag))
             Sequence.add('ABSORB', AbsorbResultState())
         return sq
 
-
-def joystick_location():  # type: () -> StateMachine
-        sq = Sequence(outcomes=['ok'], connector_outcome='ok')
-        with sq:
-            Sequence.add('SELECT_NUMBER', SelectNumberState(min=1, max=8))
-            Sequence.add('GOAL', NavigateToNumberState(), transitions={'err': 'ABSORB'})
-            Sequence.add('NOTIFY', FunctionState(notify_unmarked))
-            Sequence.add('ABSORB', AbsorbResultState())
-        return sq
+#
+# def joystick_location():  # type: () -> StateMachine
+#         sq = Sequence(outcomes=['ok'], connector_outcome='ok')
+#         with sq:
+#             Sequence.add('SELECT_NUMBER', SelectNumberState(min=1, max=8))
+#             Sequence.add('GOAL', NavigateToNumberState(), transitions={'err': 'ABSORB'})
+#             Sequence.add('NOTIFY', FunctionState(notify_unmarked))
+#             Sequence.add('ABSORB', AbsorbResultState())
+#         return sq
 
 
 def location3(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMachine
@@ -156,7 +156,7 @@ def location3(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMach
 
 
 def find_shape(squares, cam_pixel_to_point):  # type: (List[ParkingSquare], CamPixelToPointServer) -> StateMachine
-    sq = Sequence(outcomes=['ok', 'err', 'match'], connector_outcome='ok', input_keys=['green_shape'])
+    sq = Sequence(outcomes=['ok'], connector_outcome='ok', input_keys=['green_shape'])
     with sq:
         Sequence.add('SQUARE1', look_in_square(squares[0], cam_pixel_to_point))
         Sequence.add('SQUARE2', look_in_square(squares[1], cam_pixel_to_point))

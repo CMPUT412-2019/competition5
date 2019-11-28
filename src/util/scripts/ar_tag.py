@@ -34,10 +34,14 @@ class ARTag(object):
         self.pose = None  # type: PoseStamped
         self.frame = frame
         self.subscriber = rospy.Subscriber(alvar_topic, AlvarMarkers, self._ar_alvar_callback)
-        if visual_topic is not None:
-            self.visual_publisher = PublisherValue(visual_topic, PoseStamped, 10, lambda: self.pose)
+        self.frozen = False
         self.last_seen = None
         self.visible_interval = 0.1
+        if visual_topic is not None:
+            self.visual_publisher = PublisherValue(visual_topic, PoseStamped, 10, lambda: self.pose)
+
+    def freeze(self):
+        self.frozen = True
 
     def _ar_alvar_callback(self, msg):  # type: (AlvarMarkers) -> None
         for m in msg.markers:
@@ -45,6 +49,8 @@ class ARTag(object):
                 self._set_pose(m.pose)
 
     def _set_pose(self, pose):  # type: (PoseStamped) -> None
+        if self.frozen: return
+
         pose = pose_with_offset(pose, self._offset())
         pose.header.frame_id = self.frame
         self.pose = pose
@@ -73,6 +79,8 @@ class ARCube(object):
         self.pose = None  # type: PoseStamped
         self.frame = frame
         self.subscriber = rospy.Subscriber(alvar_topic, AlvarMarkers, self._ar_alvar_callback)
+        self.last_seen = None
+        self.visible_interval = 0.1
         if visual_topic is not None:
             self.visual_publisher = PublisherValue(visual_topic, PoseStamped, 10, lambda: self.pose)
 
@@ -93,6 +101,7 @@ class ARCube(object):
 
     def _set_pose(self, pose):  # type: (PoseStamped) -> None
         self.pose = pose
+        self.last_seen = rospy.get_time()
 
     def get_pose_with_offset(self, offset):  # type: (Tuple[float, float, float]) -> PoseStamped
         return pose_with_offset(self.pose, offset)
@@ -101,6 +110,10 @@ class ARCube(object):
     def surface_normal(self):
         return unit_vector(rnp.numpify(self.get_pose_with_offset((0., 0., 1.)).pose.position) -
                            rnp.numpify(self.pose.pose.position))
+
+    @property
+    def visible(self):
+        return self.last_seen is not None and rospy.get_time() - self.last_seen < self.visible_interval
 
     def _offset(self): # type: ()-> Tuple[float, float, float]
         return (0, 0, -self.cube_side_length/2)

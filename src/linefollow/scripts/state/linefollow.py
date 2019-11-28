@@ -68,7 +68,6 @@ class LineFollowState(State):
 
         self.bridge = cv_bridge.CvBridge()
         self.twist = Twist()
-        self.image_sub = rospy.Subscriber('bottom_camera/image_raw', Image, self.image_callback)
         self.twist_pub = rospy.Publisher('cmd_vel_mux/input/teleop', Twist, queue_size=1)
         self.gui_line_pub = rospy.Publisher('gui/line_mask', Image, queue_size=1)
 
@@ -83,6 +82,8 @@ class LineFollowState(State):
             self.rate.sleep()
 
     def execute(self, ud):
+        self.image_sub = rospy.Subscriber('bottom_camera/image_raw', Image, self.image_callback)
+
         self.wait_for_image()
         self.transition_behaviour.init()
 
@@ -92,6 +93,8 @@ class LineFollowState(State):
                 self.rate.sleep()
         except self.StopError:
             return 'ok'
+        finally:
+            self.image_sub.unregister()
 
     def tick(self):
         image = np.copy(self.image)
@@ -111,7 +114,7 @@ class LineFollowState(State):
             err = (cx - image.shape[1] / 2) / float(image.shape[1])
 
             t = Twist()
-            t.linear.x = self.forward_speed * max((1. - abs(err) * 1.5), 0)
+            t.linear.x = self.forward_speed * max((1. - abs(err) * 1.7), 0)
             t.angular.z = self.angle_controller.get(err)
             self.twist_pub.publish(t)
 

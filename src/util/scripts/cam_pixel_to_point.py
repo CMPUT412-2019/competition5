@@ -16,14 +16,13 @@ class CamPixelToPointServer:
         self.camera_model = PinholeCameraModel()
         self.bridge = CvBridge()
         self.model_set = False
-        self.depth_image = SubscriberValue('camera_depth_image', Image, transform=self.bridge.imgmsg_to_cv2)
         self.tf_listener = TransformListener()
 
     def pixel_to_point(self, cam_pos, out_frame='map'):  # type: (np.ndarray) -> PointStamped
         if not self.model_set:
-            self.camera_model.fromCameraInfo(rospy.wait_for_message('camera_info', CameraInfo))
+            self.camera_model.fromCameraInfo(rospy.wait_for_message('/camera/rgb/camera_info', CameraInfo))
             self.model_set = True
-        x, y = int(cam_pos[0], int(cam_pos[1]))
+        x, y = int(cam_pos[0]), int(cam_pos[1])
         d = self.read_depth_simple(x, y)
         pos = np.array(self.camera_model.projectPixelTo3dRay((x, y))) * d
 
@@ -34,4 +33,6 @@ class CamPixelToPointServer:
         return point
 
     def read_depth_simple(self, x, y):  # (int, int) -> float
-        return self.depth_image.value[y, x]
+        image = rospy.wait_for_message('/camera/depth_registered/image_raw', Image)
+        image = self.bridge.imgmsg_to_cv2(image)
+        return image[y, x]

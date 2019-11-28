@@ -1,16 +1,23 @@
 <launch>
-  <arg name="simulation" default="false"/>
+    <arg name="simulation" default="false"/>
 
-  <include file="$(find navigation)/launch/load_poses.launch"/>
-  <include file="$(find navigation)/launch/localize.launch">
-    <arg name="simulation" value="$(arg simulation)"/>
-  </include>
-  <include file="$(find util)/launch/ar_track.launch">
-    <arg name="simulation" value="$(arg simulation)"/>
-  </include>
+    <include file="$(find navigation)/launch/load_poses.launch">
+        <arg name="simulation" value="$(arg simulation)"/>
+    </include>
+    <include file="$(find navigation)/launch/localize.launch">
+        <arg name="simulation" value="$(arg simulation)"/>
+        <arg name="rviz" value="false" />
+    </include>
+    <include file="$(find util)/launch/ar_track.launch">
+        <arg name="simulation" value="$(arg simulation)"/>
+    </include>
+    <include file="$(find feature_detector)/launch/feature_detector.launch" />
 
-<!--  <node name="competition4" type="competition4.py" pkg="competition4">-->
-<!--    <remap from="camera_depth_image" to="/camera/depth/image_raw"/>-->
-<!--    <remap from="ar_pose_marker" >-->
-<!--  </node>-->
+    <node pkg="usb_cam" type="usb_cam_node" name="usb_cam_node" unless="$(arg simulation)" >
+        <param name="video_device" value="/dev/video2"/>
+        <param name="pixel_format" value="yuyv" />
+        <remap from="usb_cam_node/image_raw" to="/bottom_camera/image_raw" />
+    </node>
+
+    <node pkg='rviz' name='rviz' type='rviz' args="-d $(find competition4)/rviz/competition4.rviz"/>
 </launch>

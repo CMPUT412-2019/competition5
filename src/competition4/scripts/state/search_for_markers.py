@@ -40,9 +40,9 @@ class FindTags(State):
 def search_for_tags(squares, marker, cube):  # type: (List[ParkingSquare], ARTag, ARCube) -> StateMachine
     sm = StateMachine(outcomes=['ok'])
     with sm:
-        StateMachine.add('GO_TO_AR_SEARCH_1', NavigateToNamedPoseState('ar_search_1'), transitions={'ok': 'SEARCH1'})
+        StateMachine.add('GO_TO_AR_SEARCH_1', NavigateToNamedPoseState('ar_search_1'), transitions={'ok': 'SEARCH1', 'err': 'ABSORB'})
         StateMachine.add('SEARCH1', FindTags(squares, marker, cube), transitions={'ok': 'GO_TO_AR_SEARCH_2', 'found': 'ABSORB'})
-        StateMachine.add('GO_TO_AR_SEARCH_2', NavigateToNamedPoseState('ar_search_2'), transitions={'ok': 'SEARCH2'})
+        StateMachine.add('GO_TO_AR_SEARCH_2', NavigateToNamedPoseState('ar_search_2'), transitions={'ok': 'SEARCH2', 'err': 'ABSORB'})
         StateMachine.add('SEARCH2', FindTags(squares, marker, cube), transitions={'ok': 'GO_TO_AR_SEARCH_1', 'found': 'ABSORB'})
         StateMachine.add('ABSORB', AbsorbResultState())
     return sm
