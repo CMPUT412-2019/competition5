@@ -10,22 +10,26 @@ from smach import State
 from tf import TransformListener, transformations
 
 from src.navigation.scripts.move_to import move_to
-from src.util.scripts.ar_tag import qv_mult, ARCube
+from src.util.scripts.ar_tag import qv_mult, ARCube, ARTag
 from src.util.scripts.util import SubscriberValue, angle_diff, normal_to_quaternion
 
 
 class PushToGoalState(State):
-    def __init__(self, target, v):  # type: (Callable[[], PoseStamped], float) -> None
+    def __init__(self, cube, target, v):  # type: (ARCube, Callable[[], PoseStamped], float) -> None
         super(PushToGoalState, self).__init__(outcomes=['ok'], input_keys=['target_pose'])
         self.v = v
+        self.cube = cube
         self.target = target
         self.twist_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
+        self.target_pub = rospy.Publisher('/viz/push_target', PoseStamped, queue_size=1)
+        self.cube_pub = rospy.Publisher('/viz/push_cube', PoseStamped, queue_size=1)
         self.odometry = SubscriberValue('/odom', Odometry)
         self.tf_listener = TransformListener()
 
     def execute(self, ud):
         while not rospy.is_shutdown():
             target_pose = self.target()
+            self.target_pub.publish(target_pose)
 
             try:
                 this_pose = PoseStamped()
@@ -35,11 +39,19 @@ class PushToGoalState(State):
             except (tf.LookupException, tf.ExtrapolationException, tf.ConnectivityException), e:
                 continue
 
-            cube_offset = 0.17 + 0.32  # TODO: remove magic numbers
+            cube_offset = 0.2 + self.cube.cube_side_length/2  # TODO: remove magic numbers
             this_position = numpify(this_pose.pose.position)[0:2]
             cube_position = this_position + qv_mult(numpify(this_pose.pose.orientation), [1, 0, 0])[0:2] * cube_offset
+
+            cube_pose = PoseStamped()
+            cube_pose.header.frame_id = 'map'
+            cube_pose.pose.position = msgify(Point, np.append(cube_position, 0))
+            cube_pose.pose.orientation.w = 1
+            self.cube_pub.publish(cube_pose)
+
             target_position = numpify(target_pose.pose.position)[0:2]
             if (np.dot(target_position - this_position, target_position - cube_position)) <= 0:
+                self.twist_pub.publish(Twist())
                 return 'ok'
 
             target_angle = np.arctan2(target_pose.pose.position.y - this_pose.pose.position.y, target_pose.pose.position.x - this_pose.pose.position.x)
@@ -47,7 +59,7 @@ class PushToGoalState(State):
 
             t = Twist()
             t.linear.x = self.v
-            t.angular.z = - angle_diff(this_angle, target_angle)
+            t.angular.z = -1.5 * angle_diff(this_angle, target_angle)
             self.twist_pub.publish(t)
 
 
@@ -117,7 +129,7 @@ class LineUpBehindCubeState(State):
         target_normal = cube_normals[best_fit]
         target_normal = np.array([target_normal[0], target_normal[1], 0.0])
         target_pose = self.cube.pose
-        target_pose.pose.position = msgify(Point, numpify(target_pose.pose.position) - 0.5*target_normal)
+        target_pose.pose.position = msgify(Point, numpify(target_pose.pose.position) - 0.7*target_normal)
         target_pose.pose.position.z = 0.0
         target_orientation = normal_to_quaternion(target_normal)
         target_pose.pose.orientation = msgify(Quaternion, target_orientation)
@@ -127,10 +139,21 @@ class LineUpBehindCubeState(State):
 
         print('LineUp: moving forward')
         start_time = rospy.get_time()
-        duration = (0.5 - self.cube.cube_side_length / 2) / self.v
+        duration = (0.7 - self.cube.cube_side_length / 2) / self.v
         while not rospy.is_shutdown() and rospy.get_time() - start_time < duration:
             t = Twist()
             t.linear.x = self.v
             self.twist_pub.publish(t)
             rate.sleep()
         return 'ok'
+
+
+def parking_square_target(marker, offset):  # type: (ARTag, float) -> Callable[[], PoseStamped]
+    def inner():
+        goal = PoseStamped()
+        goal.header.frame_id = 'map'
+        goal.pose.position = marker.get_pose_with_offset([0., 0., offset]).pose.position
+        goal.pose.orientation = msgify(Quaternion, normal_to_quaternion(-marker.surface_normal))
+        return goal
+
+    return inner

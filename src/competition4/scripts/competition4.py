@@ -5,7 +5,8 @@ from geometry_msgs.msg import PoseStamped, Point
 from smach import Sequence
 from smach_ros import IntrospectionServer
 
-from src.boxpush.scripts.state.boxpush import NavigateBehindCubeState, LineUpBehindCubeState, PushToGoalState
+from src.boxpush.scripts.state.boxpush import NavigateBehindCubeState, LineUpBehindCubeState, PushToGoalState, \
+    parking_square_target
 from src.competition4.scripts.state_groups import move_to_stop_line, location1, enter_split, move_to_obstacle, location2, \
     exit_split, off_ramp, ar_tag, joystick_location, on_ramp, location3
 from src.util.scripts.ar_tag import ARTag, ARCube
@@ -21,15 +22,11 @@ class UserData:
 def main():
     rospy.init_node('competition2')
 
-    marker = ARTag(1)
-    cube = ARCube(1)
-    cam_pixel_to_point = CamPixelToPointServer()
+    wall_offset = 0.4
 
-    def target():  # type: () -> PoseStamped
-        target = PoseStamped()
-        target.pose.orientation.w = 1.0
-        target.pose.position = Point(1.0, 1.0, 0.0)
-        return target
+    marker = ARTag(30, visual_topic='/viz/marker')
+    cube = ARCube(2, visual_topic='/viz/cube')
+    cam_pixel_to_point = CamPixelToPointServer()
 
     sq = Sequence(outcomes=['ok', 'err'], connector_outcome='ok')
     with sq:
@@ -49,9 +46,10 @@ def main():
         #
         # Sequence.add('STOP3', move_to_stop_line())
 
-        Sequence.add('MOVE_BEHIND_CUBE', NavigateBehindCubeState(target, cube, 0.5))
-        Sequence.add('LINE_UP', LineUpBehindCubeState(cube, 0.2))
-        Sequence.add('PUSH', PushToGoalState(target, 0.2))
+        Sequence.add('WAIT', WaitForJoyState())
+        Sequence.add('MOVE_BEHIND_CUBE', NavigateBehindCubeState(parking_square_target(marker, wall_offset), cube, 0.7))
+        # Sequence.add('LINE_UP', LineUpBehindCubeState(cube, 0.2))
+        Sequence.add('PUSH', PushToGoalState(cube, parking_square_target(marker, wall_offset), 0.2))
 
         # Sequence.add('OFFRAMP', off_ramp())
         #

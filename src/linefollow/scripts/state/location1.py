@@ -1,7 +1,8 @@
 from smach import State
 
 from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
-from src.util.scripts.feature_detector import FeatureDetector, filter_by_distance
+from src.util.scripts.feature_detector import FeatureDetector
+from src.feature_detector.scripts.feature_detector import filter_by_distance
 from src.util.scripts.util import notify_count
 
 

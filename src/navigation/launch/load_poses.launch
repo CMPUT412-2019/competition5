@@ -1,5 +1,5 @@
 <launch>
-  <arg name="simulation" value="false"/>
+  <arg name="simulation" default="false"/>
   <rosparam command="load" file="$(find navigation)/param/simulation/named_poses.yaml" if="$(arg simulation)"/>
   <rosparam command="load" file="$(find navigation)/param/realworld/named_poses.yaml" unless="$(arg simulation)"/>
 </launch>
