@@ -1,8 +1,10 @@
 import rospy
+from actionlib import SimpleActionClient
 from geometry_msgs.msg import Point, PoseStamped, Quaternion
+from move_base_msgs.msg import MoveBaseAction
 from smach import State
 
-from src.navigation.scripts.navigate_to_moving_goal import NavigateToMovingGoalState
+from src.navigation.scripts.move_to import move_to
 
 
 class NavigateToNamedPoseState(State):
@@ -18,6 +20,7 @@ class NavigateToNamedPoseState(State):
         self.pose.header.frame_id = 'map'
         self.pose.pose.position = Point(*position)
         self.pose.pose.orientation = Quaternion(*orientation)
+        self.client = SimpleActionClient('move_base', MoveBaseAction)
 
     def execute(self, ud):
-        return NavigateToMovingGoalState(lambda: self.pose).execute(ud)
+        return 'ok' if move_to(self.client, self.pose) else 'err'

@@ -1,9 +1,9 @@
 import numpy as np
 import rospy
 from geometry_msgs.msg import Twist
-from smach import State, StateMachine, Sequence
+from smach import State, StateMachine
 
-from src.competition4.scripts.parking_square import ParkingSquare, closest_square
+from src.util.scripts.parking_square import ParkingSquare, closest_square
 from src.navigation.scripts.navigate_to_named_pose import NavigateToNamedPoseState
 from src.util.scripts.ar_tag import ARTag, ARCube
 from src.util.scripts.state.absorb_result import AbsorbResultState
