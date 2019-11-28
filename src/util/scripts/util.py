@@ -85,30 +85,30 @@ def led(msg):  # type: (str) -> None
 
 def notify_count(count):
     led({1: 'b1b2', 2: 'g1b2', 3: 'g1g2'}.get(count, 'b1b2'))
-    playsound.playsound(path.join(path.dirname(__file__), '../../../sound/{}.mp3'.format(count)), block=True)
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/{}.mp3'.format(count)), block=True)
     led('b1b2')
 
 
 def notify_match():
     led('o1o2')
-    playsound.playsound(path.join(path.dirname(__file__), '../../../sound/match.mp3'), block=True)
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/match.mp3'), block=True)
     led('b1b2')
 
 
 def notify_artag():
     led('g1g2')
-    playsound.playsound(path.join(path.dirname(__file__), '../../../sound/artag.mp3'), block=True)
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/artag.mp3'), block=True)
     led('b1b2')
 
 
 def notify_unmarked():
     led('r1r2')
-    playsound.playsound(path.join(path.dirname(__file__), '../../../sound/unmarked.mp3'), block=True)
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/unmarked.mp3'), block=True)
     led('b1b2')
 
 
 def notify_number(n):  # type:  (int) -> None
-    playsound.playsound(path.join(path.dirname(__file__), '../../../sound/number_{}.mp3'.format(int(n))), block=True)
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/number_{}.mp3'.format(int(n))), block=True)
 
 
 def angle_diff(a, b):

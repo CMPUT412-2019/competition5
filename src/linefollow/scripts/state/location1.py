@@ -1,8 +1,7 @@
 from smach import State
 
 from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
-from src.util.scripts.feature_detector import FeatureDetector
-from src.feature_detector.scripts.feature_detector import filter_by_distance
+from src.feature_detector.scripts.feature_detector import filter_by_distance, FeatureDetector
 from src.util.scripts.util import notify_count
 
 
@@ -17,7 +16,7 @@ class Location1State(State):
             features = self.feature_detector.get_features()
             features = [f for f in features if f.colour == 'red']
             features = filter_by_distance(features, max_distance=1., cam_pixel_to_point=self.cam_pixel_to_point)
-            notify_count(len(features))
+            notify_count(min(3, len(features)))
             return 'ok'
         except Exception, e:
             print(e)

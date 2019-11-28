@@ -26,7 +26,7 @@ class PredictClient:
         self.cv_bridge = cv_bridge.CvBridge()
         self.request_publisher = rospy.Publisher('/pred/request', Image)
         self.result_subscriber = rospy.Subscriber('/pred/result', String, self._on_pred)
-        self.result_publisher = rospy.Publisher('/pred/result_image', Image)
+        self.result_publisher = rospy.Publisher('/pred/result_image', Image, queue_size=1)
         self.colours_by_name = {'red': (0, 0, 255), 'green': (0, 255, 0)}
         self.done = False
         self.prediction = None
@@ -59,21 +59,18 @@ class PredictClient:
 class FeatureDetector:
     def __init__(self):
         self.bridge = cv_bridge.CvBridge()
-        self.image = SubscriberValue('/camera/rgb/image_raw', Image)
         self.colours_by_name = {'red': (0, 0, 255), 'green': (0, 255, 0)}
         self.viz_image_pub = rospy.Publisher('/viz/feature_detector', Image, queue_size=1)
 
         self.predict_client = PredictClient()
 
     def get_features(self):
-        _ = self.image.value
-
         duration = 2
         rate = rospy.Rate(100)
         start_time = rospy.get_time()
         boxes, labels, colours = [], [], []
         while not rospy.is_shutdown() and rospy.get_time() - start_time < duration:
-            bb, l, c = self.predict_client.predict(self.image.value)
+            bb, l, c = self.predict_client.predict(rospy.wait_for_message('/camera/rgb/image_raw', Image))
             boxes.append(bb)
             labels.append(l)
             colours.append(c)

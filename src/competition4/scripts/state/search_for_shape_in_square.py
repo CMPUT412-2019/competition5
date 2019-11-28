@@ -1,6 +1,6 @@
 from smach import State
 
-from src.util.scripts.feature_detector import FeatureDetector, filter_by_distance, feature_depths
+from src.feature_detector.scripts.feature_detector import FeatureDetector, filter_by_distance, feature_depths
 from src.util.scripts.util import notify_match
 
 

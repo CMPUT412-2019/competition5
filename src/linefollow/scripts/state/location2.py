@@ -1,6 +1,6 @@
 from smach import State
 
-from src.util.scripts.feature_detector import FeatureDetector
+from src.feature_detector.scripts.feature_detector import FeatureDetector
 from src.util.scripts.util import notify_count
 
 
