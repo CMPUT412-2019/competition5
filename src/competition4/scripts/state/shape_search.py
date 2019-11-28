@@ -5,7 +5,7 @@ from src.util.scripts.util import notify_match
 
 
 class SearchForShapeInSquareState(State):
-    def __init__(self, square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixelToPointServer) -> None:
+    def __init__(self, square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixelToPointServer) -> None
         State.__init__(self, outcomes=['ok'], input_keys=['green_shape'])
         self.feature_detector = FeatureDetector()
         self.cam_pixel_to_point = cam_pixel_to_point

@@ -122,10 +122,7 @@ class ARCube(object):
 if __name__ == '__main__':
     rospy.init_node('ar_tag_demo')
 
-    cube = ARCube(2, tag_side_length=0.204, cube_side_length=0.32,
-                  alvar_topic='/ar_pose_marker', visual_topic='/cube_viz')
-
-    tag = ARTag(20, side_length=0.204,
-                alvar_topic='/ar_pose_marker', visual_topic='/tag_viz')
+    cube = ARCube(2, cube_side_length=0.32, alvar_topic='/ar_pose_marker', visual_topic='/cube_viz')
+    tag = ARTag(20, alvar_topic='/ar_pose_marker', visual_topic='/tag_viz')
 
     rospy.spin()

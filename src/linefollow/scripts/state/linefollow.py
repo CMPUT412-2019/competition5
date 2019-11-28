@@ -82,7 +82,7 @@ class LineFollowState(State):
             self.rate.sleep()
 
     def execute(self, ud):
-        self.image_sub = rospy.Subscriber('bottom_camera/image_raw', Image, self.image_callback)
+        image_sub = rospy.Subscriber('bottom_camera/image_raw', Image, self.image_callback)
 
         self.wait_for_image()
         self.transition_behaviour.init()
@@ -94,7 +94,7 @@ class LineFollowState(State):
         except self.StopError:
             return 'ok'
         finally:
-            self.image_sub.unregister()
+            image_sub.unregister()
 
     def tick(self):
         image = np.copy(self.image)
