@@ -12,3 +12,12 @@ class FunctionState(State):
     def execute(self, ud):
         self.function()
         return self.outcome
+
+
+class ReturnFunctionState(State):
+    def __init__(self, function, outcomes):  # type: (Callable, List[str]) -> None
+        super(ReturnFunctionState, self).__init__(outcomes=outcomes)
+        self.function = function
+
+    def execute(self, ud):
+        return self.function()

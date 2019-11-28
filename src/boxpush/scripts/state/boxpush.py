@@ -6,26 +6,31 @@ from geometry_msgs.msg import Twist, PoseStamped, Point, Quaternion, Pose2D
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify, msgify
-from smach import State
+from smach import State, StateMachine, Sequence
 from tf import TransformListener, transformations
+from typing import List
 
+from src.linefollow.scripts.state.rotate import RotateState
 from src.navigation.scripts.move_to import move_to
 from src.util.scripts.ar_tag import qv_mult, ARCube
+from src.util.scripts.parking_square import ParkingSquare, closest_square
+from src.util.scripts.state.function import ReturnFunctionState
+from src.util.scripts.state.park_into_pose import park_into_pose
 from src.util.scripts.util import SubscriberValue, angle_diff, normal_to_quaternion
 
 
-class PushToGoalState(State):
-    def __init__(self, target, v):  # type: (Callable[[], PoseStamped], float) -> None
-        super(PushToGoalState, self).__init__(outcomes=['ok'], input_keys=['target_pose'])
+class PushToMarkerSquareState(State):
+    def __init__(self, squares, v):  # type: (List[ParkingSquare], float) -> None
+        super(PushToMarkerSquareState, self).__init__(outcomes=['ok'])
         self.v = v
-        self.target = target
+        self.squares = squares
         self.twist_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
         self.odometry = SubscriberValue('/odom', Odometry)
         self.tf_listener = TransformListener()
 
     def execute(self, ud):
         while not rospy.is_shutdown():
-            target_pose = self.target()
+            target_pose = next(square.pose for square in self.squares if square.contains_marker())
 
             try:
                 this_pose = PoseStamped()
@@ -51,86 +56,36 @@ class PushToGoalState(State):
             self.twist_pub.publish(t)
 
 
-class NavigateBehindCubeState(State):
-    def __init__(self, target, cube, back_distance):  # type: (Callable[[], PoseStamped], ARCube, float) -> None
-        super(NavigateBehindCubeState, self).__init__(outcomes=['ok', 'err'])
-        self.target = target
-        self.cube = cube
-        self.back_distance = back_distance
-        self.client = SimpleActionClient('move_base', MoveBaseAction)
+def navigate_behind_cube(squares):  # type: (List[ParkingSquare]) -> StateMachine
 
-    def execute(self, ud):
-        cube_pose = self.cube.pose  # type: PoseStamped
-        cube_position = np.array([cube_pose.pose.position.x, cube_pose.pose.position.y])
+    def goal():
+        marker_square = next(square for square in squares if square.contains_marker())
+        cube_square = next(square for square in squares if square.contains_cube())
 
-        tag_pose = self.target()
-        tag_position = np.array([tag_pose.pose.position.x, tag_pose.pose.position.y])
-
-        r_mo = transformations.unit_vector(cube_position - tag_position)
-        goal_position = cube_position + self.back_distance * r_mo
-        orientation_facing_marker = normal_to_quaternion(-r_mo)
-
-        goal_pose = PoseStamped()
-        goal_pose.header.frame_id = cube_pose.header.frame_id
-        goal_pose.pose.position = Point(goal_position[0], goal_position[1], 0)
-        goal_pose.pose.orientation = msgify(Quaternion, orientation_facing_marker)
-        if self._move_to(goal_pose):
-            return 'ok'
+        print('Square {} contains marker; square {} contains cube.'.format(marker_square.number, cube_square.number))
+        if cube_square.number > marker_square.number:
+            goal_number = cube_square.number + 1
         else:
-            return 'err'
+            goal_number = cube_square.number - 1
+        print('Going to square {}'.format(goal_number))
+        goal_square = next(square for square in squares if square.number == goal_number)
+        return goal_square.pose
 
-    def _move_to(self, pose):  # type: (PoseStamped) -> bool
-        self.client.wait_for_server()
-        goal = MoveBaseGoal()
-        goal.target_pose.header.frame_id = pose.header.frame_id
-        goal.target_pose.pose.position = pose.pose.position
-        goal.target_pose.pose.orientation = pose.pose.orientation
-        self.client.send_goal(goal)
-        return self.client.wait_for_result()
+    def direction():
+        marker_square = next(square for square in squares if square.contains_marker())
+        cube_square = next(square for square in squares if square.contains_cube())
 
+        print('Square {} contains marker; square {} contains cube.'.format(marker_square.number, cube_square.number))
+        if cube_square.number > marker_square.number:
+            direction = 'ccw'
+        else:
+            direction = 'cw'
 
-class LineUpBehindCubeState(State):
-    def __init__(self, cube, v):  # type: (ARCube, float) -> None
-        super(LineUpBehindCubeState, self).__init__(outcomes=['ok', 'err'])
-        self.cube = cube
-        self.v = v
-        self.twist_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
-        self.pose2d = SubscriberValue('/pose2d', Pose2D)
-        self.tf_listener = TransformListener()
-        self.client = SimpleActionClient('move_base', MoveBaseAction)
+    sm = StateMachine(outcomes=['ok', 'err'])
+    with sm:
+        StateMachine.add('PARK', park_into_pose(goal), transitions={'ok': 'CHOOSE_DIRECTION'})
+        StateMachine.add('CHOOSE_DIRECTION', ReturnFunctionState(direction, ['ccw', 'cc']), transitions={'ccw': 'TURN_CCW', 'cw': 'TURN_CW'})
+        StateMachine.add('TURN_CCW', RotateState(angle=np.pi/2))
+        StateMachine.add('TURN_CW', RotateState(angle=-np.pi/2))
+    return sm
 
-    def execute(self, ud):
-        rate = rospy.Rate(10)
-
-        print('LineUp: moving to start')
-
-        pose2d = self.pose2d.value  # type: Pose2D
-        robot_angle = pose2d.theta
-        robot_normal = np.array([np.cos(robot_angle), np.sin(robot_angle)])
-        cube_normals = [
-            np.array([self.cube.surface_normal[0], self.cube.surface_normal[1]]),
-            np.array([-self.cube.surface_normal[0], self.cube.surface_normal[1]]),
-            np.array([-self.cube.surface_normal[0], -self.cube.surface_normal[1]]),
-            np.array([self.cube.surface_normal[0], -self.cube.surface_normal[1]]),
-        ]
-        best_fit = np.argmax([np.dot(robot_normal, cube_normal) for cube_normal in cube_normals])
-        target_normal = cube_normals[best_fit]
-        target_normal = np.array([target_normal[0], target_normal[1], 0.0])
-        target_pose = self.cube.pose
-        target_pose.pose.position = msgify(Point, numpify(target_pose.pose.position) - 0.5*target_normal)
-        target_pose.pose.position.z = 0.0
-        target_orientation = normal_to_quaternion(target_normal)
-        target_pose.pose.orientation = msgify(Quaternion, target_orientation)
-
-        if not move_to(self.client, target_pose):
-            return 'err'
-
-        print('LineUp: moving forward')
-        start_time = rospy.get_time()
-        duration = (0.5 - self.cube.cube_side_length / 2) / self.v
-        while not rospy.is_shutdown() and rospy.get_time() - start_time < duration:
-            t = Twist()
-            t.linear.x = self.v
-            self.twist_pub.publish(t)
-            rate.sleep()
-        return 'ok'

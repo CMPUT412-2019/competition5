@@ -5,7 +5,8 @@ from ros_numpy import msgify, numpify
 
 
 class ParkingSquare:
-    def __init__(self, pose_name):  # type: (str) -> None
+    def __init__(self, number):  # int: (str) -> None
+        pose_name = 'S{}'.format(number)
         position = [float(x) for x in rospy.get_param('named_poses/{}/position'.format(pose_name))]
         orientation = [float(x) for x in rospy.get_param('named_poses/{}/orientation'.format(pose_name))]
         self._pose = PoseStamped()
@@ -13,10 +14,15 @@ class ParkingSquare:
         self._pose.pose.position = msgify(Point, position)
         self._pose.pose.orientation = msgify(Quaternion, orientation)
         self._contains = set()
+        self._number = number
 
     @property
     def pose(self):
         return self._pose
+
+    @property
+    def number(self):
+        return self._number
 
     def distance_to(self, position):  # type: (Point) -> float
         return np.sqrt((position.x - self.pose.pose.position.x)**2, (position.y-self.pose.pose.position.y)**2)

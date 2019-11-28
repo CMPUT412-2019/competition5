@@ -1,11 +1,10 @@
 import numpy as np
-from geometry_msgs.msg import PoseStamped, Point, Quaternion
-from ros_numpy import msgify
 from smach import Sequence, StateMachine
 
-from src.competition4.scripts.parking_square import ParkingSquare
-from src.competition4.scripts.state.search_for_shape_in_square import SearchForShapeInSquareState
-from src.competition4.scripts.state.short_circuit_parking_square import ShortCircuitParkingSquareState
+from src.boxpush.scripts.state.boxpush import navigate_behind_cube, PushToMarkerSquareState
+from src.util.scripts.parking_square import ParkingSquare
+from src.competition4.scripts.state.shape_search import SearchForShapeInSquareState, ShortCircuitParkingSquareState
+from src.util.scripts.state.park_into_pose import park_into_pose
 from src.linefollow.scripts.filter import RedDetector, RedLowerDetector, white_filter, red_filter
 from src.linefollow.scripts.pid_control import PIDController
 from src.linefollow.scripts.state.find_marker import FindMarkerState
@@ -17,9 +16,8 @@ from src.linefollow.scripts.state.location3 import Location3State
 from src.linefollow.scripts.state.rotate import RotateState
 from src.linefollow.scripts.state.stop import StopState
 from src.navigation.scripts.navigate_to_marker import NavigateToMarkerState
-from src.navigation.scripts.navigate_to_goal import NavigateToGoalState
 from src.navigation.scripts.navigate_to_named_pose import NavigateToNamedPoseState
-from src.util.scripts.ar_tag import ARTag, qv_mult
+from src.util.scripts.ar_tag import ARTag
 from src.util.scripts.cam_pixel_to_point import CamPixelToPointServer
 from src.util.scripts.state.absorb_result import AbsorbResultState
 from src.util.scripts.state.function import FunctionState
@@ -179,20 +177,21 @@ def look_in_square(square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixe
     dt = offset / v
 
     def goal():
-        pose = PoseStamped()
-        pose.header.frame_id = 'map'
-        position = square.pose.pose.position
-        orientation = square.pose.pose.orientation
-        position += qv_mult(orientation, np.array([offset, 0.0, 0.0]))
-        pose.pose.position = msgify(Point, position)
-        pose.pose.orientation = msgify(Quaternion, orientation)
+        return square.pose
 
     with sq:
         Sequence.add('SHORTCIRCUIT', ShortCircuitParkingSquareState(square), transitions={'shortcircuit': 'ABSORB'})
-        Sequence.add('MOVE_IN_FRONT', NavigateToGoalState(goal))
-        Sequence.add('MOVE_FORWARD', ForwardState(v, dt))
-        Sequence.add('STOP', StopState())
+        Sequence.add('PARK', park_into_pose(goal), transitions={'err': 'ABSORB'})
         Sequence.add('FIND', SearchForShapeInSquareState(square, cam_pixel_to_point))
         Sequence.add('MOVE_BACK', ForwardState(-v, dt))
+        Sequence.add('ABSORB', AbsorbResultState())
+    return sq
+
+
+def push_cube(squares):  # type: (List[ParkingSquare]) -> StateMachine
+    sq = Sequence(outcomes=['ok'], connector_outcome='ok')
+    with sq:
+        Sequence.add('MOVE_BEHIND_CUBE', navigate_behind_cube(squares), transitions={'err': 'ABSORB'})
+        Sequence.add('PUSH', PushToMarkerSquareState(squares, 0.2))
         Sequence.add('ABSORB', AbsorbResultState())
     return sq
