@@ -7,11 +7,7 @@ from src.util.scripts.parking_square import ParkingSquare, closest_square
 from src.navigation.scripts.navigate_to_named_pose import NavigateToNamedPoseState
 from src.util.scripts.ar_tag import ARTag, ARCube
 from src.util.scripts.state.absorb_result import AbsorbResultState
-from src.util.scripts.util import notify_cube
-
-
-def notify_marker():
-    pass
+from src.util.scripts.util import notify_cube, notify_artag
 
 
 class FindTags(State):
@@ -24,22 +20,24 @@ class FindTags(State):
         self.twist_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
 
     def execute(self, ud):
+        found_marker = False
+        found_cube = False
         rate = rospy.Rate(10)
         duration = 2*np.pi/self.rotate_speed * 1.5
         start_time = rospy.get_time()
         while not rospy.is_shutdown() and rospy.get_time()-start_time < duration:
             if self.marker.pose is not None:
-                square = closest_square(self.marker.pose.pose.position, self.squares)
-                if not square.contains_marker():
-                    notify_marker()
-                square.set_contains_marker()
+                if not found_marker:
+                    notify_artag()
+                    found_marker = True
+                closest_square(self.marker.pose.pose.position, self.squares).set_contains_marker()
             if self.cube.pose is not None:
-                square = closest_square(self.cube.pose.pose.position, self.squares)
-                if not square.contains_cube():
+                if not found_cube:
                     notify_cube()
-                square.set_contains_cube()
+                    found_cube = True
+                closest_square(self.cube.pose.pose.position, self.squares).set_contains_cube()
 
-            if self.marker.pose is not None and self.cube.pose is not None:
+            if found_marker and found_cube:
                 return 'found'
             t = Twist()
             t.angular.z = self.rotate_speed

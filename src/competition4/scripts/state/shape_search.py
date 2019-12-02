@@ -26,7 +26,7 @@ class SearchForShapeInSquareState(State):
         if feature.shape == ud.green_shape:
             notify_match()
             self.square.set_contains_shape()
-            return 'match'
+            return 'ok'
 
         self.square.set_contains_wrong_shape()
         return 'ok'
