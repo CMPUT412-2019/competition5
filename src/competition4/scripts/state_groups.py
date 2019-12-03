@@ -34,12 +34,7 @@ kp = 9.
 kd = -0.01 # 0.02
 ki = 1.
 
-# forward_speed = 0
-# kp = 0
-# kd = 0
-# ki = 0
-
-proximity_detector = ProximityDetector(.7)
+proximity_detector = ProximityDetector(1.0)
 
 
 def location1(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMachine
