@@ -74,6 +74,8 @@ class LineFollowState(State):
         self.rate = rospy.Rate(10)
         self.image = None
 
+        self.line_mask = None
+
     def image_callback(self, msg):
         self.image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 
@@ -102,6 +104,12 @@ class LineFollowState(State):
 
         eye_mask = self.get_eye_mask(hsv)
         line_mask = self.line_filter(hsv) & eye_mask
+        # line_mask = cv2.erode(line_mask, np.ones((9, 9)))
+
+        if self.is_mask_empty(line_mask) and self.line_mask is not None:
+            line_mask = self.line_mask
+        else:
+            self.line_mask = line_mask
 
         # Check for stopping condition
         if self.transition_behaviour.tick(hsv):
@@ -109,7 +117,10 @@ class LineFollowState(State):
 
         # Line following
         if not self.is_mask_empty(line_mask):
-            cx, cy = self.get_mask_center(line_mask)
+            try:
+                cx, cy = self.get_mask_center(line_mask)
+            except Exception as err:
+                raise err
             cv2.circle(image, (cx, cy), 20, (0, 0, 255), -1)
             err = (cx - image.shape[1] / 2) / float(image.shape[1])
 
@@ -123,7 +134,9 @@ class LineFollowState(State):
 
     @staticmethod
     def get_eye_mask(image):
-        return np.ones(image.shape[:2]).astype('uint8')
+        mask = np.ones(image.shape[:2]).astype('uint8')
+        mask[0:image.shape[0]/2, :] = 0
+        return mask
 
     @staticmethod
     def get_mask_center(mask):
