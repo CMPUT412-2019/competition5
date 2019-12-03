@@ -11,7 +11,7 @@ if __name__ == '__main__':
         'artag.mp3': 'Found marker',
         'unmarked.mp3': 'Found unmarked spot',
         'pushed.mp3': 'Finished pushing the box',
-        'finished.mp3': 'Finished the source',
+        'finished.mp3': 'Finished the course',
     }
 
     for n in range(-20, 20):
