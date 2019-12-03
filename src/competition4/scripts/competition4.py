@@ -53,21 +53,21 @@ def main():
         # Sequence.add('STOP3', move_to_stop_line())
 
         # Sequence.add('OFFRAMP', off_ramp())
-        # #
-        # Sequence.add('SEARCH_FOR_MARKERS', search_for_tags(squares, marker, cube))
-        # #
-        # # Sequence.add('GO_TO_MARKER', ar_tag(marker))
-        # #
-        # Sequence.add('PUSH_CUBE', push_cube(cube, marker))
-        # #
-        # # Sequence.add('FIND_SHAPE', find_shape(squares, cam_pixel_to_point))
-        # #
-        # Sequence.add('ONRAMP', on_ramp())
+        #
+        Sequence.add('SEARCH_FOR_MARKERS', search_for_tags(squares, marker, cube))
 
-        Sequence.add('STOP4', move_to_stop_line(lower=True))
+        Sequence.add('GO_TO_MARKER', ar_tag(marker))
 
-        Sequence.add('LOCATION3', location3(cam_pixel_to_point))
+        Sequence.add('PUSH_CUBE', push_cube(cube, marker))
 
+        Sequence.add('FIND_SHAPE', find_shape(squares, cam_pixel_to_point))
+
+        Sequence.add('ONRAMP', on_ramp())
+        #
+        # Sequence.add('STOP4', move_to_stop_line(lower=True))
+        #
+        # Sequence.add('LOCATION3', location3(cam_pixel_to_point))
+        #
         # Sequence.add('STOP5', move_to_stop_line())
 
     # sq.userdata.green_shape = 'triangle'

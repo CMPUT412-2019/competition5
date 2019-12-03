@@ -127,7 +127,7 @@ class PushToGoalState(State):
             except (tf.LookupException, tf.ExtrapolationException, tf.ConnectivityException), e:
                 continue
 
-            cube_offset = 0.18 + self.cube.cube_side_length/2 + 0.3  # TODO: remove magic numbers
+            cube_offset = 0.18 + self.cube.cube_side_length/2 + 0.3 + 0.05  # TODO: remove magic numbers
             this_position = numpify(this_pose.pose.position)[0:2]
             cube_position = this_position + qv_mult(numpify(this_pose.pose.orientation), [1, 0, 0])[0:2] * cube_offset
             target_position = numpify(target_pose.pose.position)[0:2]

@@ -135,7 +135,7 @@ class LineFollowState(State):
     @staticmethod
     def get_eye_mask(image):
         mask = np.ones(image.shape[:2]).astype('uint8')
-        mask[0:image.shape[0]/2, :] = 0
+        # mask[0:image.shape[0]/2, :] = 0
         return mask
 
     @staticmethod

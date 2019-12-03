@@ -28,13 +28,13 @@ from src.util.scripts.state.function import FunctionState, ReturnFunctionState
 from src.util.scripts.util import ProximityDetector, notify_artag, notify_unmarked, notify_pushed
 from src.util.scripts.select_number import SelectNumberState
 
-forward_speed = 0.8
+forward_speed = 0.4
 # forward_speed = 0.8
 kp = 9.
-kd = -0.01 # 0.02
+kd = -0.1 # 0.02
 ki = 1.
 
-proximity_detector = ProximityDetector(1.0)
+proximity_detector = ProximityDetector(0.7)
 
 
 def location1(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMachine
