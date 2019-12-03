@@ -6,7 +6,7 @@ from sensor_msgs.msg import Image
 
 
 def white_filter(hsv):  # type: (np.ndarray) -> np.ndarray
-    return cv2.inRange(hsv, np.array([0, 0, 200]), np.array([255, 70, 255])).astype(bool)
+    return cv2.inRange(hsv, np.array([0, 0, 180]), np.array([180, 70, 255])).astype(bool)
 
 
 def red_filter(hsv):  # type: (np.ndarray) -> np.ndarray

@@ -1,0 +1,23 @@
+src/util/sound/*.mp3
+*.pyc
+
+build/
+devel/
+logs/
+.catkin_tools/
+
+# Packages built from source
+src/kobuki_bumper2pc/
+src/kobuki_description/
+src/kobuki_keyop/
+src/kobuki_msgs/
+src/kobuki_node/
+src/kobuki_safety_controller/
+src/navigation/rtabmap/realworld/rtabmap.db
+src/ros_numpy/
+src/turtlebot/
+src/turtlebot_apps/
+src/turtlebot_msgs/
+src/turtlebot_simulator/
+src/yocs_cmd_vel_mux/
+src/yocs_controllers/

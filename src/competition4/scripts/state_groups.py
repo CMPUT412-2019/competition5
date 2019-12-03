@@ -28,10 +28,12 @@ from src.util.scripts.state.function import FunctionState, ReturnFunctionState
 from src.util.scripts.util import ProximityDetector, notify_artag, notify_unmarked, notify_pushed
 from src.util.scripts.select_number import SelectNumberState
 
-forward_speed = 0.6
-kp = 4.
-ki = 0.
-kd = 0.
+forward_speed = 0.8
+# forward_speed = 0.8
+kp = 9.
+kd = -0.01 # 0.02
+ki = 1.
+
 proximity_detector = ProximityDetector(.7)
 
 
