@@ -75,7 +75,8 @@ def main():
         Sequence.add('STOP5', move_to_stop_line())
 
         Sequence.add('NOTIFY', FunctionState(lambda: notify_finished()))
-        Sequence.add('RESET', FunctionState(lambda: marker.reset()))
+        Sequence.add('RESET_MARKER', FunctionState(lambda: marker.reset()))
+        Sequence.add('RESET_CUBE', FunctionState(lambda: cube.reset()))
         Sequence.add('REDO', ReturnFunctionState(lambda: 'err', ['ok', 'err']), transitions={'err': 'STOP1'})
 
     # sq.userdata.green_shape = 'square'
