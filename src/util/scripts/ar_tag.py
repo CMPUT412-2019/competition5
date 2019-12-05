@@ -123,6 +123,10 @@ class ARCube(object):
     def _offset(self): # type: ()-> Tuple[float, float, float]
         return (0, 0, -self.cube_side_length/2)
 
+    def reset(self):
+        self.last_seen = None
+        self.pose = None
+
 
 if __name__ == '__main__':
     rospy.init_node('ar_tag_demo')

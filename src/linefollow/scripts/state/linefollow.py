@@ -125,7 +125,7 @@ class LineFollowState(State):
             err = (cx - image.shape[1] / 2) / float(image.shape[1])
 
             t = Twist()
-            t.linear.x = self.forward_speed # * max((1. - abs(err) * 1.9), 0)
+            t.linear.x = self.forward_speed * max((1. - abs(err) * 1.9), 0)
             t.angular.z = self.angle_controller.get(err)
             self.twist_pub.publish(t)
 
@@ -147,4 +147,5 @@ class LineFollowState(State):
 
     @staticmethod
     def is_mask_empty(mask):
-        return np.all(mask == 0)
+        return np.sum(mask != 0) < 100
+        # return np.all(mask == 0)

@@ -39,20 +39,23 @@ def main():
     sq = Sequence(outcomes=['ok', 'err'], connector_outcome='ok')
     with sq:
 
-        # Sequence.add('START', WaitForJoyState())
+        # Sequence.add('LOOP', move_to_stop_line(), transitions={'ok': 'LOOP'})
+
+        Sequence.add('START', WaitForJoyState())
 
         Sequence.add('STOP1', move_to_stop_line())
-        Sequence.add('LOCATION1', location1(cam_pixel_to_point))
+        # Sequence.add('LOCATION1', location1(cam_pixel_to_point))
 
         Sequence.add('STOP2', move_to_stop_line())
 
-        Sequence.add('SPLIT_ENTER', enter_split())
+        Sequence.add('STOP_SPLIT', move_to_stop_line())
+        # Sequence.add('SPLIT_ENTER', enter_split())
 
-        Sequence.add('OBSTACLE1', move_to_obstacle())
-        Sequence.add('MOVEFORWARD', ForwardState(0.2, 1))
-        Sequence.add('LOCATION2', location2())
+        # Sequence.add('OBSTACLE1', move_to_obstacle())
+        # Sequence.add('MOVEFORWARD', ForwardState(0.2, 1))
+        # Sequence.add('LOCATION2', location2())
 
-        Sequence.add('SPLIT_EXIT', exit_split())
+        # Sequence.add('SPLIT_EXIT', exit_split())
 
         Sequence.add('STOP3', move_to_stop_line())
 
@@ -64,18 +67,23 @@ def main():
 
         Sequence.add('PUSH_CUBE', push_cube(cube, marker, squares))
 
-        Sequence.add('FIND_SHAPE', find_shape(squares, cam_pixel_to_point))
+        # Sequence.add('FIND_SHAPE', find_shape(squares, cam_pixel_to_point))
         #
         Sequence.add('ONRAMP', on_ramp())
 
         Sequence.add('STOP4', move_to_stop_line(lower=True))
 
-        Sequence.add('LOCATION3', location3(cam_pixel_to_point))
+        Sequence.add('STOP_LOCATION3_1', move_to_stop_line(lower=True))
+        Sequence.add('STOP_LOCATION3_2', move_to_stop_line(lower=True))
+        Sequence.add('STOP_LOCATION3_3', move_to_stop_line(lower=True))
+
+        # Sequence.add('LOCATION3', location3(cam_pixel_to_point))
 
         Sequence.add('STOP5', move_to_stop_line())
 
         Sequence.add('NOTIFY', FunctionState(lambda: notify_finished()))
-        Sequence.add('RESET', FunctionState(lambda: marker.reset()))
+        Sequence.add('RESET_MARKER', FunctionState(lambda: marker.reset()))
+        Sequence.add('RESET_CUBE', FunctionState(lambda: cube.reset()))
         Sequence.add('REDO', ReturnFunctionState(lambda: 'err', ['ok', 'err']), transitions={'err': 'STOP1'})
 
     # sq.userdata.green_shape = 'square'
