@@ -84,16 +84,23 @@ def led(msg):  # type: (str) -> None
 
 
 def notify_count(count):
+    count = max(1, count)
+    count = min(3, count)
     led({1: 'b1b2', 2: 'g1b2', 3: 'g1g2'}.get(count, 'b1b2'))
     playsound.playsound(path.join(path.dirname(__file__), '../sound/{}.mp3'.format(count)), block=True)
     led('b1b2')
 
-
-def notify_match():
+def notify_location3_match():
     led('o1o2')
     playsound.playsound(path.join(path.dirname(__file__), '../sound/match.mp3'), block=True)
     led('b1b2')
 
+def notify_location4_match():
+    led('o1b2')
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/match.mp3'), block=True)
+    led('o1g2')
+    playsound.playsound(path.join(path.dirname(__file__), '../sound/parked.mp3'), block=True)
+    led('b1b2')
 
 def notify_artag():
     led('g1b2')

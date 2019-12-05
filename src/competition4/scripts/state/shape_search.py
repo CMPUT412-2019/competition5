@@ -1,7 +1,7 @@
 from smach import State
 
 from src.feature_detector.scripts.feature_detector import FeatureDetector, filter_by_distance, feature_depths
-from src.util.scripts.util import notify_match
+from src.util.scripts.util import notify_location3_match, notify_location4_match
 
 
 class SearchForShapeInSquareState(State):
@@ -25,7 +25,8 @@ class SearchForShapeInSquareState(State):
         print(feature.shape)
 
         if feature.shape == ud.green_shape:
-            notify_match()
+            notify_location4_match()
+
             self.square.set_contains_shape()
             return 'ok'
 

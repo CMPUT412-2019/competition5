@@ -11,13 +11,13 @@ class Location2State(State):
 
     def execute(self, ud):
         try:
+            ud.green_shape = None
             features = self.feature_detector.get_features()
             green_shape = next(f.shape for f in features if f.colour == 'green')
             ud.green_shape = green_shape
-            notify_count(len(features))
             print(green_shape)
+            notify_count(len(features))
             return 'ok'
         except Exception, e:
             print(e)
-            ud.green_shape = None
             return 'err'

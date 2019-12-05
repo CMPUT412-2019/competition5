@@ -8,6 +8,7 @@ if __name__ == '__main__':
         '2.mp3': 'I see 2 shapes',
         '3.mp3': 'I see 3 shapes',
         'match.mp3': 'I found the matching shape',
+        'parked.mp3': 'Parked at the square containing the matching shape',
         'artag.mp3': 'Found marker',
         'unmarked.mp3': 'Found unmarked spot',
         'pushed.mp3': 'Finished pushing the box',

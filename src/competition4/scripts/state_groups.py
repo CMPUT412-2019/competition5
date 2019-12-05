@@ -3,14 +3,16 @@ from geometry_msgs.msg import PoseStamped, Point, Quaternion
 from ros_numpy import msgify, numpify
 from smach import Sequence, StateMachine
 import rospy
+from typing import List
 
 from src.boxpush.scripts.state.boxpush import navigate_behind_cube, PushToGoalState, \
     parking_square_target, navigate_behind_cube2
 from src.navigation.scripts.init_amcl import InitAMCLState
 from src.navigation.scripts.named_waypoint import get_named_pose
-from src.util.scripts.parking_square import ParkingSquare
+from src.navigation.scripts.navigate_to_goal import NavigateToGoalState
+from src.util.scripts.parking_square import ParkingSquare, closest_square
 from src.competition4.scripts.state.shape_search import SearchForShapeInSquareState, ShortCircuitParkingSquareState
-from src.util.scripts.state.park_into_pose import park_into_pose
+from src.util.scripts.state.park_into_pose import park_into_pose, offset_goal
 from src.linefollow.scripts.filter import RedDetector, RedLowerDetector, white_filter, red_filter
 from src.linefollow.scripts.pid_control import PIDController
 from src.linefollow.scripts.state.find_marker import FindMarkerState
@@ -117,13 +119,17 @@ def on_ramp():  # type: () -> StateMachine
     return sq
 
 
-def ar_tag(marker):  # type: (ARTag) -> StateMachine
+def go_to_marker(marker, squares):  # type: (ARTag, List[ParkingSquare]) -> StateMachine
+        def marker_square():
+            return closest_square(marker.pose.pose.position, squares).pose
+
         sq = Sequence(outcomes=['ok'], connector_outcome='ok')
         with sq:
             # Sequence.add('AR_START', NavigateToNamedPoseState('ar_start'), transitions={'err': 'ABSORB'})
             # Sequence.add('AR_FIND', FindMarkerState(marker, 'cmd_vel_mux/input/teleop'))
-            Sequence.add('AR_GOTO', NavigateToMarkerState(marker), transitions={'err': 'ABSORB'})
-            Sequence.add('NOTIFY', FunctionState(notify_artag))
+            # Sequence.add('AR_GOTO', NavigateToMarkerState(marker), transitions={'err': 'ABSORB'})
+            Sequence.add('AR_GOTO', NavigateToGoalState(offset_goal(marker_square, -0.5)), transitions={'err': 'ABSORB'})
+            # Sequence.add('NOTIFY', FunctionState(notify_artag))
             Sequence.add('FREEZE_MARKER', FunctionState(lambda: marker.freeze()))
             Sequence.add('ABSORB', AbsorbResultState())
         return sq

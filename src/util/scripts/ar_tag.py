@@ -43,6 +43,11 @@ class ARTag(object):
     def freeze(self):
         self.frozen = True
 
+    def reset(self):
+        self.frozen = False
+        self.last_seen = None
+        self.pose = None
+
     def _ar_alvar_callback(self, msg):  # type: (AlvarMarkers) -> None
         for m in msg.markers:
             if m.id == self.number:

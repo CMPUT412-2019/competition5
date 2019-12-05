@@ -142,7 +142,7 @@ class PushToGoalState(State):
             target_position_pub.pose.orientation.w = 1
             self.cube_pub.publish(target_position_pub)
 
-            print(target_position - this_position, target_position - cube_position)
+            # print(target_position - this_position, target_position - cube_position)
             if (np.dot(target_position - this_position, target_position - cube_position)) <= 0:
                 self.twist_pub.publish(Twist())
                 return 'ok'
