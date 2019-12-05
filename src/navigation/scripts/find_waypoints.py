@@ -11,7 +11,7 @@ def main():
     joy_subscriber = SubscriberValue('joy', Joy)
     tf_listener = TransformListener()
 
-    names = ['off_ramp_start', 'off_ramp_end', 'ar_search_1', 'ar_search_2', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'on_ramp']
+    names = ['initial_pose', 'off_ramp_start', 'off_ramp_end', 'ar_search_1', 'ar_search_2', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'on_ramp']
     coords = []
 
     for name in names:

@@ -5,7 +5,9 @@ from smach import Sequence, StateMachine
 import rospy
 
 from src.boxpush.scripts.state.boxpush import navigate_behind_cube, PushToGoalState, \
-    parking_square_target
+    parking_square_target, navigate_behind_cube2
+from src.navigation.scripts.init_amcl import InitAMCLState
+from src.navigation.scripts.named_waypoint import get_named_pose
 from src.util.scripts.parking_square import ParkingSquare
 from src.competition4.scripts.state.shape_search import SearchForShapeInSquareState, ShortCircuitParkingSquareState
 from src.util.scripts.state.park_into_pose import park_into_pose
@@ -100,6 +102,7 @@ def exit_split():  # type: () -> StateMachine
 def off_ramp():  # type: () -> StateMachine
     sq = Sequence(outcomes=['ok'], connector_outcome='ok')
     with sq:
+        Sequence.add('INIT_AMCL', InitAMCLState(initial_pose=lambda: get_named_pose('initial_pose'), clear_costmaps=True))
         Sequence.add('GOAL_OFFRAMP_START', NavigateToNamedPoseState('off_ramp_start'), transitions={'err': 'GOAL_OFFRAMP_END'})
         Sequence.add('GOAL_OFFRAMP_END', NavigateToNamedPoseState('off_ramp_end'), transitions={'err': 'ABSORB'})
         Sequence.add('ABSORB', AbsorbResultState())
@@ -167,16 +170,16 @@ def find_shape(squares, cam_pixel_to_point):  # type: (List[ParkingSquare], CamP
 
     sq = Sequence(outcomes=['ok'], connector_outcome='ok', input_keys=['green_shape'])
     with sq:
-        Sequence.add('SQUARE1', look_in_square(squares[0], cam_pixel_to_point))
-        Sequence.add('SHORTCIRCUIT_1', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
-        Sequence.add('SQUARE2', look_in_square(squares[1], cam_pixel_to_point))
-        Sequence.add('SHORTCIRCUIT_2', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
-        Sequence.add('SQUARE3', look_in_square(squares[2], cam_pixel_to_point))
-        Sequence.add('SHORTCIRCUIT_3', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
-        Sequence.add('SQUARE4', look_in_square(squares[3], cam_pixel_to_point))
-        Sequence.add('SHORTCIRCUIT_4', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
-        Sequence.add('SQUARE5', look_in_square(squares[4], cam_pixel_to_point))
-        Sequence.add('SHORTCIRCUIT_5', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
+        # Sequence.add('SQUARE1', look_in_square(squares[0], cam_pixel_to_point))
+        # Sequence.add('SHORTCIRCUIT_1', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
+        # Sequence.add('SQUARE2', look_in_square(squares[1], cam_pixel_to_point))
+        # Sequence.add('SHORTCIRCUIT_2', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
+        # Sequence.add('SQUARE3', look_in_square(squares[2], cam_pixel_to_point))
+        # Sequence.add('SHORTCIRCUIT_3', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
+        # Sequence.add('SQUARE4', look_in_square(squares[3], cam_pixel_to_point))
+        # Sequence.add('SHORTCIRCUIT_4', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
+        # Sequence.add('SQUARE5', look_in_square(squares[4], cam_pixel_to_point))
+        # Sequence.add('SHORTCIRCUIT_5', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
         Sequence.add('SQUARE6', look_in_square(squares[5], cam_pixel_to_point))
         Sequence.add('SHORTCIRCUIT_6', ReturnFunctionState(found_shape, ['ok', 'found']), transitions={'found': 'ABSORB'})
         Sequence.add('SQUARE7', look_in_square(squares[6], cam_pixel_to_point))
@@ -206,7 +209,7 @@ def look_in_square(square, cam_pixel_to_point):  # type: (ParkingSquare, CamPixe
     return sq
 
 
-def push_cube(cube, marker):  # type: (ARCube, ARTag) -> StateMachine
+def push_cube(cube, marker, squares):  # type: (ARCube, ARTag) -> StateMachine
     sq = Sequence(outcomes=['ok'], connector_outcome='ok')
 
     def distance():
@@ -216,8 +219,9 @@ def push_cube(cube, marker):  # type: (ARCube, ARTag) -> StateMachine
         return rospy.get_time() - cube.last_seen < 0.2
 
     with sq:
-        Sequence.add('MOVE_BEHIND_CUBE', navigate_behind_cube(parking_square_target(marker, offset=0.4), cube), transitions={'err': 'ABSORB'})
-        Sequence.add('PUSH', PushToGoalState(cube, parking_square_target(marker, offset=0.4), v=0.2))
+        # Sequence.add('MOVE_BEHIND_CUBE', navigate_behind_cube(parking_square_target(marker, offset=0.4, squares=squares), cube, squares), transitions={'err': 'ABSORB'})
+        Sequence.add('MOVE_BEHIND_CUBE', navigate_behind_cube2(marker, cube, squares), transitions={'err': 'ABSORB'})
+        Sequence.add('PUSH', PushToGoalState(cube, parking_square_target(marker, offset=0.4, squares=squares), v=0.2))
         Sequence.add('BACK', ForwardState(-0.2))
         Sequence.add('REDO_BACK', ReturnFunctionState(lambda: 'ok' if can_see_cube() else 'back', ['ok', 'back']), transitions={'back': 'BACK'})
         Sequence.add('REDO', ReturnFunctionState(lambda: 'ok' if distance() < 0.5 else 'redo', ['ok', 'redo']), transitions={'redo': 'MOVE_BEHIND_CUBE'})

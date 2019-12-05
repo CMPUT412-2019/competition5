@@ -4,7 +4,7 @@
     <include file="$(find navigation)/launch/load_poses.launch">
         <arg name="simulation" value="$(arg simulation)"/>
     </include>
-    <include file="$(find navigation)/launch/localize.launch">
+    <include file="$(find navigation)/launch/amcl_localize.launch">
         <arg name="simulation" value="$(arg simulation)"/>
         <arg name="rviz" value="false" />
     </include>
