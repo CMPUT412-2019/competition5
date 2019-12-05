@@ -3,6 +3,8 @@ import rospy
 from geometry_msgs.msg import PoseStamped, Point, Quaternion
 from ros_numpy import msgify, numpify
 
+from src.util.scripts.util import PublisherValue
+
 
 class ParkingSquare:
     def __init__(self, number):  # int: (str) -> None
@@ -15,6 +17,9 @@ class ParkingSquare:
         self._pose.pose.orientation = msgify(Quaternion, orientation)
         self._contains = set()
         self._number = number
+
+        self._pose_publisher = rospy.Publisher('/viz/parking_square_{}'.format(number), PoseStamped, latch=True, queue_size=1)
+        self._pose_publisher.publish(self.pose)
 
     @property
     def pose(self):

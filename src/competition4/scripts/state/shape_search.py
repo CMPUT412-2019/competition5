@@ -14,9 +14,10 @@ class SearchForShapeInSquareState(State):
     def execute(self, ud):
         features = self.feature_detector.get_features()
         features = [f for f in features if f.colour == 'red']
-        features = filter_by_distance(features, 1., self.cam_pixel_to_point)
-        depths = feature_depths(features, self.cam_pixel_to_point)
-        feature = next((f for i, f in enumerate(features) if depths[i] == min(depths)), None)
+        features = filter_by_distance(features, 1., self.cam_pixel_to_point, remove_nan=False)
+        bbs = [feature.bb for feature in features]
+        areas = [w * h for _, _, w, h in bbs]
+        feature = next((f for i, f in enumerate(features) if areas[i] == max(areas)), None)
 
         if feature is None:
             return 'ok'

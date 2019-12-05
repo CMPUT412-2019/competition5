@@ -36,7 +36,7 @@ kp = 9.
 kd = -0.1 # 0.02
 ki = 1.
 
-proximity_detector = ProximityDetector(0.7)
+proximity_detector = ProximityDetector(1)
 
 
 def location1(cam_pixel_to_point):  # type: (CamPixelToPointServer) -> StateMachine
@@ -124,6 +124,7 @@ def ar_tag(marker):  # type: (ARTag) -> StateMachine
             # Sequence.add('AR_FIND', FindMarkerState(marker, 'cmd_vel_mux/input/teleop'))
             Sequence.add('AR_GOTO', NavigateToMarkerState(marker), transitions={'err': 'ABSORB'})
             Sequence.add('NOTIFY', FunctionState(notify_artag))
+            Sequence.add('FREEZE_MARKER', FunctionState(lambda: marker.freeze()))
             Sequence.add('ABSORB', AbsorbResultState())
         return sq
 
@@ -218,13 +219,14 @@ def push_cube(cube, marker, squares):  # type: (ARCube, ARTag) -> StateMachine
     def can_see_cube():
         return rospy.get_time() - cube.last_seen < 0.2
 
+
     with sq:
         # Sequence.add('MOVE_BEHIND_CUBE', navigate_behind_cube(parking_square_target(marker, offset=0.4, squares=squares), cube, squares), transitions={'err': 'ABSORB'})
         Sequence.add('MOVE_BEHIND_CUBE', navigate_behind_cube2(marker, cube, squares), transitions={'err': 'ABSORB'})
-        Sequence.add('PUSH', PushToGoalState(cube, parking_square_target(marker, offset=0.4, squares=squares), v=0.2))
+        Sequence.add('PUSH', PushToGoalState(cube, parking_square_target(marker, squares=squares), v=0.2))
         Sequence.add('BACK', ForwardState(-0.2))
-        Sequence.add('REDO_BACK', ReturnFunctionState(lambda: 'ok' if can_see_cube() else 'back', ['ok', 'back']), transitions={'back': 'BACK'})
-        Sequence.add('REDO', ReturnFunctionState(lambda: 'ok' if distance() < 0.5 else 'redo', ['ok', 'redo']), transitions={'redo': 'MOVE_BEHIND_CUBE'})
-        Sequence.add('NOTIFY', FunctionState(lambda: notify_pushed()))
+        # Sequence.add('REDO_BACK', ReturnFunctionState(lambda: 'ok' if can_see_cube() else 'back', ['ok', 'back']), transitions={'back': 'BACK'})
+        # Sequence.add('REDO', ReturnFunctionState(lambda: 'ok' if distance() < 0.5 else 'redo', ['ok', 'redo']), transitions={'redo': 'MOVE_BEHIND_CUBE'})
+        # Sequence.add('NOTIFY', FunctionState(lambda: notify_pushed()))
         Sequence.add('ABSORB', AbsorbResultState())
     return sq

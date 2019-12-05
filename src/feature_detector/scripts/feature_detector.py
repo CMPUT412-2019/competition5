@@ -111,11 +111,13 @@ def feature_depths(features, cam_pixel_to_point):  # type: (List[Feature], CamPi
     return depths
 
 
-def filter_by_distance(features, max_distance, cam_pixel_to_point):  # type: (List[Feature], float, CamPixelToPointServer) -> List[Feature]
+def filter_by_distance(features, max_distance, cam_pixel_to_point, remove_nan=True):  # type: (List[Feature], float, CamPixelToPointServer) -> List[Feature]
     filtered = []
     for feature in features:
         point = cam_pixel_to_point.pixel_to_point(feature.centroid, 'camera_link')
         if point.point.x <= max_distance:
+            filtered.append(feature)
+        elif np.isnan(point.point.x) and not remove_nan:
             filtered.append(feature)
     return filtered
 

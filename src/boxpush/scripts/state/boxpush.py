@@ -112,6 +112,7 @@ class PushToGoalState(State):
         self.target = target
         self.twist_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist, queue_size=10)
         self.target_pub = rospy.Publisher('/viz/push_target', PoseStamped, queue_size=1)
+        self.cube_pub = rospy.Publisher('/viz/push_cube_estimate', PoseStamped, queue_size=1)
         self.odometry = SubscriberValue('/odom', Odometry)
         self.tf_listener = TransformListener()
 
@@ -128,10 +129,19 @@ class PushToGoalState(State):
             except (tf.LookupException, tf.ExtrapolationException, tf.ConnectivityException), e:
                 continue
 
-            cube_offset = 0.18 + self.cube.cube_side_length/2 + 0.3 + 0.05 - .30 + 0.09  # TODO: remove magic numbers
+            # cube_offset = 0.18 + self.cube.cube_side_length/2 + 0.3 + 0.05 - .30 + 0.09 + 0.05  # TODO: remove magic numbers
+            cube_offset = 0.41
             this_position = numpify(this_pose.pose.position)[0:2]
             cube_position = this_position + qv_mult(numpify(this_pose.pose.orientation), [1, 0, 0])[0:2] * cube_offset
             target_position = numpify(target_pose.pose.position)[0:2]
+
+            target_position_pub = PoseStamped()
+            target_position_pub.header.frame_id = 'map'
+            target_position_pub.pose.position.x = target_position[0]
+            target_position_pub.pose.position.y = target_position[1]
+            target_position_pub.pose.orientation.w = 1
+            self.cube_pub.publish(target_position_pub)
+
             print(target_position - this_position, target_position - cube_position)
             if (np.dot(target_position - this_position, target_position - cube_position)) <= 0:
                 self.twist_pub.publish(Twist())
@@ -146,14 +156,21 @@ class PushToGoalState(State):
             self.twist_pub.publish(t)
 
 
-def parking_square_target(marker, offset, squares):  # type: (ARTag, float, List[ParkingSquare]) -> Callable[[], PoseStamped]
+def parking_square_target(marker, squares):  # type: (ARTag, float, List[ParkingSquare]) -> Callable[[], PoseStamped]
+    def offset_goal(pose, offset):
+        position = numpify(pose.pose.position)
+        orientation = numpify(pose.pose.orientation)
+        position += qv_mult(orientation, np.array([offset, 0.0, 0.0]))
+        pose.pose.position = msgify(Point, position)
+        pose.pose.orientation = msgify(Quaternion, orientation)
+        return pose
+
     def inner():
         goal = PoseStamped()
         goal.header.frame_id = 'map'
-        goal.pose.position = marker.get_pose_with_offset([0., 0., offset]).pose.position
         goal.pose.position = closest_square(marker.pose.pose.position, squares).pose.pose.position
         goal.pose.orientation = msgify(Quaternion, normal_to_quaternion(-marker.surface_normal))
-        return goal
+        return offset_goal(goal, offset=0.1)
 
     return inner
 
@@ -228,10 +245,11 @@ def navigate_behind_cube2(marker, cube, squares):  # type: (ARTag, ARCube, List[
     def goal_pose():
         marker_square = closest_square(marker.pose.pose.position, squares)
         cube_square = closest_square(cube.pose.pose.position, squares)
-        if marker_square.number > cube_square.number:
-            target_square = next(s for s in squares if s.number == cube_square.number - 1)
+        cube_number = max(2, min(4, cube_square.number))
+        if marker_square.number > cube_number:
+            target_square = next(s for s in squares if s.number == cube_number - 1)
         else:
-            target_square = next(s for s in squares if s.number == cube_square.number + 1)
+            target_square = next(s for s in squares if s.number == cube_number + 1)
         return target_square.pose
 
     def direction():
@@ -245,7 +263,7 @@ def navigate_behind_cube2(marker, cube, squares):  # type: (ARTag, ARCube, List[
 
     sm = StateMachine(outcomes=['ok', 'err'])
     with sm:
-        StateMachine.add('park', park_into_pose(goal_pose), transitions={'ok': 'CHOOSE_DIRECTION'})
+        StateMachine.add('park', park_into_pose(goal_pose, 0.4), transitions={'ok': 'CHOOSE_DIRECTION'})
         StateMachine.add('CHOOSE_DIRECTION', ReturnFunctionState(direction, ['ccw', 'cw']),
                          transitions={'ccw': 'TURN_CCW', 'cw': 'TURN_CW'})
         StateMachine.add('TURN_CCW', RotateState(angle=np.pi/2))
