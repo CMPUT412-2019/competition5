@@ -50,3 +50,23 @@ and run the python file `src/competition4/scripts/competition4.py`.
 
 # Method
 
+## Re-used components
+
+We re-used the following components from previous competitions:
+
+- [Changing state at red lines](https://github.com/CMPUT412-2019/cmput412-competition2#changing-state-at-red-lines)
+- [Turning](https://github.com/CMPUT412-2019/cmput412-competition2#turning)
+- [Stopping](https://github.com/CMPUT412-2019/cmput412-competition2#stopping)
+- [Waypoint navigation](https://github.com/CMPUT412-2019/competition3/blob/master/Readme.md#waypoint-navigation)
+- [Off-ramp and on-ramp](https://github.com/CMPUT412-2019/competition3/blob/master/Readme.md#off-ramp-and-on-ramp)
+- [Searching for AR cube and target marker](https://github.com/CMPUT412-2019/competition4#searching-for-ar-cube-and-target-marker)
+- [Shape detection (locations 2 and 3)](https://github.com/CMPUT412-2019/competition4#shape-detection-locations-2-and-3)
+
+## Line-following
+
+While line-following is conceptually similar to [previous competitions](https://github.com/CMPUT412-2019/cmput412-competition2#line-following), we made several small changes to the algorithm:
+
+- The white mask has been updated to be more sensitive than before, to prevent the robot from immediately losing the line after location 1. It also uses the HSL colour space rather than HSV.
+- To remove false positives, the line is only considered to be seen if there are more than 100 pixels matching the line colour.
+- If the line is lost, the robot considers its location in pixel coordinates to be identical to its last known location.
+- The robot does not move at constant speed, but rather slows down as the center of mass of the line pixels moves away from the center of the camera (this was present in earlier competitions, but appears to be unmentioned in their reports).
