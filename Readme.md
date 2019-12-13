@@ -71,6 +71,19 @@ While line-following is conceptually similar to [previous competitions](https://
 - If the line is lost, the robot considers its location in pixel coordinates to be identical to its last known location.
 - The robot does not move at constant speed, but rather slows down as the center of mass of the line pixels moves away from the center of the camera (this was present in earlier competitions, but appears to be unmentioned in their reports).
 
+## Mapping and localization
+
+We now use [GMapping](https://openslam-org.github.io/gmapping.html) for mapping and [AMCL](https://wiki.ros.org/amcl?distro=kinetic) for localization.
+The map is limited to the location 4 area only.
+We scattered objects around that area randomly when mapping in order to give GMapping more features and improve map quality.
+We then manually cleaned up the map, including removing these objects.
+
+| Original map | Cleaned-up map |
+|:------------:|:--------------:|
+| ![](images/map-raw.png) | ![](images/map-final.png) |
+
+We localized the robot within the course using AMCL. We put a waypoint on the stop line just before the off ramp, and the robot reset its localization to that waypoint before exiting via the off ramp.
+
 ## Box-pushing
 
 Our box-pushing strategy is similar to our previous approach, but with some changes to make the process more robust. The algorithm is as follows:
@@ -82,4 +95,3 @@ Our box-pushing strategy is similar to our previous approach, but with some chan
 - Move forward (correcting with odometry) until the box's projected position (calculated by adding an offset to the robot's center) is at or past the center of the target square.
 
 Note that, unlike our last competition, we do not attempt to recognize a failure to push the box, or to implement recovery behaviour if such a situation occures. The above algorithm proved in testing to be robust enough for our purposes without such techniques.
-
