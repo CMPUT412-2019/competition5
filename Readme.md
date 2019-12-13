@@ -44,3 +44,14 @@ While line-following is conceptually similar to [previous competitions](https://
 - To remove false positives, the line is only considered to be seen if there are more than 100 pixels matching the line colour.
 - If the line is lost, the robot considers its location in pixel coordinates to be identical to its last known location.
 - The robot does not move at constant speed, but rather slows down as the center of mass of the line pixels moves away from the center of the camera (this was present in earlier competitions, but appears to be unmentioned in their reports).
+
+## Mapping and localization
+
+We now use [GMapping](https://openslam-org.github.io/gmapping.html) for mapping and [AMCL](https://wiki.ros.org/amcl?distro=kinetic) for localization.
+The map is limited to the location 4 area only.
+We scattered objects around that area randomly when mapping in order to give GMapping more features and improve map quality.
+We then manually cleaned up the map, including removing these objects.
+The final map is shown below:
+![](src/navigation/amcl/realworld/map.png)
+
+We manually set the robot's position within the map when the robot stops at the stop line just before the off ramp.
