@@ -97,3 +97,10 @@ Our box-pushing strategy is similar to our previous approach, but with some chan
 Note that, unlike our last competition, we do not attempt to recognize a failure to push the box, or to implement recovery behaviour if such a situation occures. The above algorithm proved in testing to be robust enough for our purposes without such techniques.
 
 [![](images/box-push-thumbnail.png)](https://drive.google.com/open?id=1WoiA0QvpzRToGFaCrkWglESosUYUmAGd)
+
+
+# Competition strategy
+
+Although our code has the ability to perform all the tasks in the competition, to earn the maximum amount of points we chose to only attempt box-pushing. A video of a test run of our robot illustrates our technique:
+
+[![](images/full-run-thumbnail.png)](https://drive.google.com/open?id=1qp4m1mySJg3U9ASMa3wZBK9zTQIH-5QR)
