@@ -23,3 +23,15 @@ Installation instructions are largely identical to those of [competition 4](http
 The code is run exactly [as before](https://github.com/CMPUT412-2019/competition4#running-the-code).
 
 # Method
+
+## Re-used components
+
+We re-used the following components from previous competitions:
+
+- [Changing state at red lines](https://github.com/CMPUT412-2019/cmput412-competition2#changing-state-at-red-lines)
+- [Turning](https://github.com/CMPUT412-2019/cmput412-competition2#turning)
+- [Stopping](https://github.com/CMPUT412-2019/cmput412-competition2#stopping)
+- [Waypoint navigation](https://github.com/CMPUT412-2019/competition3/blob/master/Readme.md#waypoint-navigation)
+- [Off-ramp and on-ramp](https://github.com/CMPUT412-2019/competition3/blob/master/Readme.md#off-ramp-and-on-ramp)
+- [Searching for AR cube and target marker](https://github.com/CMPUT412-2019/competition4#searching-for-ar-cube-and-target-marker)
+- [Shape detection (locations 2 and 3)](https://github.com/CMPUT412-2019/competition4#shape-detection-locations-2-and-3)
