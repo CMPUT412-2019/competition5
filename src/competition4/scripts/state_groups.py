@@ -233,6 +233,6 @@ def push_cube(cube, marker, squares):  # type: (ARCube, ARTag) -> StateMachine
         Sequence.add('BACK', ForwardState(-0.2))
         # Sequence.add('REDO_BACK', ReturnFunctionState(lambda: 'ok' if can_see_cube() else 'back', ['ok', 'back']), transitions={'back': 'BACK'})
         # Sequence.add('REDO', ReturnFunctionState(lambda: 'ok' if distance() < 0.5 else 'redo', ['ok', 'redo']), transitions={'redo': 'MOVE_BEHIND_CUBE'})
-        # Sequence.add('NOTIFY', FunctionState(lambda: notify_pushed()))
         Sequence.add('ABSORB', AbsorbResultState())
+        Sequence.add('NOTIFY', FunctionState(lambda: notify_pushed()))
     return sq
