@@ -10,6 +10,14 @@ For details on the individual tasks, see [our previous report](https://github.co
 
 # Setup and building
 
+Installation instructions are largely identical to those of [competition 4](https://github.com/CMPUT412-2019/competition4#setup-and-building), except that
+
+- The code should be procured by cloning this repository, instead of the competition 4 repository (the trained model should still be obtained from the competition 4 release)
+- The map from the competition 3 release is no longer needed
+- The box-pushing and camera apparatus has changed, and now is as follows:
+  ![](images/box-push.jpg)
+  ![](images/camera.jpg)
+
 # Running the code
 
 # Method
