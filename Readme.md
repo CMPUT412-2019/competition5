@@ -20,5 +20,6 @@ Installation instructions are largely identical to those of [competition 4](http
 
 # Running the code
 
-# Method
+The code is run exactly [as before](https://github.com/CMPUT412-2019/competition4#running-the-code).
 
+# Method
