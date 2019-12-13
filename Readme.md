@@ -77,7 +77,9 @@ We now use [GMapping](https://openslam-org.github.io/gmapping.html) for mapping 
 The map is limited to the location 4 area only.
 We scattered objects around that area randomly when mapping in order to give GMapping more features and improve map quality.
 We then manually cleaned up the map, including removing these objects.
-The final map is shown below:
-![](src/navigation/amcl/realworld/map.png)
 
-We manually set the robot's position within the map when the robot stops at the stop line just before the off ramp.
+| Original map | Cleaned-up map |
+|:------------:|:--------------:|
+| ![](images/map-raw.png) | ![](images/map-final.png) |
+
+We localized the robot within the course using AMCL. We put a waypoint on the stop line just before the off ramp, and the robot reset its localization to that waypoint before exiting via the off ramp.
