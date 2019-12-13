@@ -95,3 +95,5 @@ Our box-pushing strategy is similar to our previous approach, but with some chan
 - Move forward (correcting with odometry) until the box's projected position (calculated by adding an offset to the robot's center) is at or past the center of the target square.
 
 Note that, unlike our last competition, we do not attempt to recognize a failure to push the box, or to implement recovery behaviour if such a situation occures. The above algorithm proved in testing to be robust enough for our purposes without such techniques.
+
+[![](images/box-push-thumbnail.png)](https://drive.google.com/open?id=1WoiA0QvpzRToGFaCrkWglESosUYUmAGd)
